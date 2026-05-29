@@ -50,6 +50,7 @@ func _start() -> void:
 
 	status.clear()
 	YandexSDK.signal_loaded()
+	galaxy.preload_location_cards()  # фоновый прекэш картинок планет
 	_start_polling()
 
 

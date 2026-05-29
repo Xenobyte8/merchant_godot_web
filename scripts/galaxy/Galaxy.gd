@@ -113,3 +113,33 @@ func _on_planet_pressed(planet_id: int) -> void:
 		return
 	var ships := ships_at_planet(planet_id)
 	planet_tapped.emit(planet_id, planet.planet_name, planet.slug, ships)
+
+
+## Фоновая загрузка location_card.png всех планет в Session.texture_cache.
+## Вызывать без await — работает параллельно в фоне.
+func preload_location_cards() -> void:
+	for p in _planets.values():
+		var slug: String = p.slug
+		if slug.is_empty() or Session.texture_cache.has(slug):
+			continue
+		Session.texture_cache[slug] = null  # помечаем «в загрузке»
+		_fetch_location_card(slug)
+
+
+func _fetch_location_card(slug: String) -> void:
+	var url := Session.api_base + "/assets/images/" + slug + "/location_card.png"
+	var http := HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(
+		func(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or code != 200:
+				Session.texture_cache.erase(slug)
+				return
+			var img := Image.new()
+			if img.load_png_from_buffer(body) != OK:
+				Session.texture_cache.erase(slug)
+				return
+			Session.texture_cache[slug] = ImageTexture.create_from_image(img)
+	)
+	http.request(url)

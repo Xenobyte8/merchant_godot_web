@@ -18,6 +18,7 @@ var _cargo_label:    Label
 var _buy_tab_btn:    Button
 var _sell_tab_btn:   Button
 var _list_container: VBoxContainer
+var _error_toast:    PanelContainer
 
 
 func _ready() -> void:
@@ -80,6 +81,18 @@ func _show_error(msg: String) -> void:
 	lbl.add_theme_font_size_override("font_size", 22)
 	lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
 	_list_container.add_child(lbl)
+
+
+func _show_trade_error(msg: String) -> void:
+	if _error_toast == null:
+		return
+	var lbl: Label = _error_toast.get_child(0)
+	if lbl:
+		lbl.text = "⚠  " + msg
+	_error_toast.visible = true
+	var tween := create_tween()
+	tween.tween_interval(4.0)
+	tween.tween_callback(func(): _error_toast.visible = false)
 
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
@@ -274,6 +287,9 @@ func _make_qty_box(min_val: int, max_val: int) -> HBoxContainer:
 func _do_buy(resource_id: int, quantity: float, weight_per_unit: float) -> void:
 	var ship_id := int(_ship.get("id", 0))
 	var result  := await _api.trade_buy(ship_id, _planet_id, resource_id, quantity)
+	if result.get("_error", false):
+		_show_trade_error(result.get("detail", "Ошибка покупки"))
+		return
 	if result.is_empty():
 		return
 	var actual_qty: float = result.get("quantity", quantity)
@@ -286,6 +302,9 @@ func _do_buy(resource_id: int, quantity: float, weight_per_unit: float) -> void:
 func _do_sell(resource_id: int, quantity: float, weight_per_unit: float) -> void:
 	var ship_id := int(_ship.get("id", 0))
 	var result  := await _api.trade_sell(ship_id, _planet_id, resource_id, quantity)
+	if result.get("_error", false):
+		_show_trade_error(result.get("detail", "Ошибка продажи"))
+		return
 	if result.is_empty():
 		return
 	var actual_qty: float = result.get("quantity", quantity)
@@ -391,6 +410,29 @@ func _build_ui() -> void:
 	tabs.add_child(_sell_tab_btn)
 
 	root.add_child(HSeparator.new())
+
+	# ── Тост с ошибкой торговли ───────────────────────────────────────────────
+	_error_toast = PanelContainer.new()
+	_error_toast.visible = false
+	_error_toast.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var toast_style := StyleBoxFlat.new()
+	toast_style.bg_color = Color(0.45, 0.08, 0.08, 0.92)
+	toast_style.corner_radius_top_left     = 8
+	toast_style.corner_radius_top_right    = 8
+	toast_style.corner_radius_bottom_left  = 8
+	toast_style.corner_radius_bottom_right = 8
+	toast_style.content_margin_left   = 16
+	toast_style.content_margin_right  = 16
+	toast_style.content_margin_top    = 10
+	toast_style.content_margin_bottom = 10
+	_error_toast.add_theme_stylebox_override("panel", toast_style)
+	var toast_lbl := Label.new()
+	toast_lbl.add_theme_font_size_override("font_size", 22)
+	toast_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.75))
+	toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_error_toast.add_child(toast_lbl)
+	root.add_child(_error_toast)
 
 	# ── Прокручиваемый список ─────────────────────────────────────────────────
 	var scroll := ScrollContainer.new()

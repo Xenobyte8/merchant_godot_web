@@ -181,9 +181,18 @@ func _post_query(path: String, params: Dictionary) -> Dictionary:
 	var code: int            = result[1]
 	var raw: PackedByteArray = result[3]
 
-	if http_result != HTTPRequest.RESULT_SUCCESS or code != 200:
-		request_failed.emit("HTTP %d %s" % [code, path])
+	if http_result != HTTPRequest.RESULT_SUCCESS:
+		request_failed.emit("Ошибка сети %s" % path)
 		return {}
+
+	if code != 200:
+		var detail := "Ошибка HTTP %d" % code
+		var json2 := JSON.new()
+		if json2.parse(raw.get_string_from_utf8()) == OK:
+			var d = json2.get_data()
+			if d is Dictionary and d.has("detail"):
+				detail = str(d["detail"])
+		return {"_error": true, "detail": detail}
 
 	var json := JSON.new()
 	if json.parse(raw.get_string_from_utf8()) != OK:

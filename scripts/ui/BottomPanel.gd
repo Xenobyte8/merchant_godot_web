@@ -49,8 +49,13 @@ func show_planet(planet_name: String, planet_id: int, planet_slug: String, ships
 	current_ship       = {}
 	current_planet_id  = planet_id
 	_icon.texture      = null
-	if not planet_slug.is_empty() and OS.has_feature("web"):
-		_load_icon_http(_icon, Session.api_base + SHIP_ASSETS_URL_PATH + planet_slug + "/location_card.png")
+	if not planet_slug.is_empty():
+		var cached = Session.texture_cache.get(planet_slug)
+		if cached is ImageTexture:
+			_icon.texture = cached
+		elif OS.has_feature("web"):
+			_load_icon_http_cached(_icon, planet_slug,
+				Session.api_base + SHIP_ASSETS_URL_PATH + planet_slug + "/location_card.png")
 	_title.text        = planet_name
 	_subtitle.text     = ""
 	_extra.text        = ""
@@ -475,6 +480,28 @@ func _load_icon_http(target: TextureRect, url: String) -> void:
 			if img.load_png_from_buffer(body) != OK:
 				return
 			target.texture = ImageTexture.create_from_image(img)
+	)
+	http.request(url)
+
+
+## Загружает изображение по URL и сохраняет в Session.texture_cache[slug].
+func _load_icon_http_cached(target: TextureRect, slug: String, url: String) -> void:
+	Session.texture_cache[slug] = null  # помечаем «в загрузке»
+	var http := HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(
+		func(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or code != 200:
+				Session.texture_cache.erase(slug)
+				return
+			var img := Image.new()
+			if img.load_png_from_buffer(body) != OK:
+				Session.texture_cache.erase(slug)
+				return
+			var tex := ImageTexture.create_from_image(img)
+			Session.texture_cache[slug] = tex
+			target.texture = tex
 	)
 	http.request(url)
 

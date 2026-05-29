@@ -17,6 +17,9 @@ var username: String = "test_user"
 var first_name: String = "Test"
 var last_name: String = "User"
 
+## Кэш текстур планет: slug -> ImageTexture (null = в процессе загрузки)
+var texture_cache: Dictionary = {}
+
 var _initialized := false
 
 
