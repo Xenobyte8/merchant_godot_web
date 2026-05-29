@@ -3,13 +3,14 @@ extends Node2D
 # Корневой композитор сцены: связывает ApiClient, Galaxy и StatusOverlay.
 # Не содержит ни HTTP, ни рендеринга — только последовательность действий.
 
-@onready var api:           ApiClient    = $ApiClient
-@onready var galaxy:        Galaxy       = $Galaxy
-@onready var status:        StatusOverlay = $StatusOverlay
-@onready var bottom_panel:  BottomPanel  = $BottomPanel
-@onready var city_view:     CityView     = $CityView
-@onready var market_screen: MarketScreen = $MarketScreen
-@onready var camera:        MapCamera    = $MapCamera
+@onready var api:            ApiClient         = $ApiClient
+@onready var galaxy:         Galaxy            = $Galaxy
+@onready var status:         StatusOverlay     = $StatusOverlay
+@onready var bottom_panel:   BottomPanel       = $BottomPanel
+@onready var city_view:      CityView          = $CityView
+@onready var market_screen:  MarketScreen      = $MarketScreen
+@onready var quests_inbox:   QuestsInboxScreen = $QuestsInboxScreen
+@onready var camera:         MapCamera         = $MapCamera
 
 const POLL_INTERVAL_SEC := 10.0
 
@@ -31,7 +32,9 @@ func _ready() -> void:
 	city_view.closed.connect(func(): bottom_panel.collapse())
 	market_screen.closed.connect(func(): city_view.visible = true)
 	market_screen.trade_completed.connect(_refresh_after_trade)
+	quests_inbox.closed.connect(_on_quests_inbox_closed)
 	camera.map_tapped.connect(_on_map_tapped)
+	_add_quests_button()
 	_start()
 
 
@@ -126,3 +129,48 @@ func _on_market_requested(planet_id: int) -> void:
 
 func _on_api_failed(message: String) -> void:
 	status.show_error(message)
+
+
+# ── Кнопка «Общие задания» (верхний правый угол) ─────────────────────────────
+
+func _add_quests_button() -> void:
+	var nav_layer := CanvasLayer.new()
+	nav_layer.layer = 8   # ниже оверлеев экранов, но выше карты
+	add_child(nav_layer)
+
+	var btn := Button.new()
+	btn.text = "📋"
+	btn.tooltip_text = "Общие задания"
+	btn.flat = false
+
+	# Позиция в правом верхнем углу
+	btn.anchor_left   = 1.0
+	btn.anchor_right  = 1.0
+	btn.anchor_top    = 0.0
+	btn.anchor_bottom = 0.0
+	btn.offset_left   = -56
+	btn.offset_right  = -8
+	btn.offset_top    =  8
+	btn.offset_bottom =  48
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.10, 0.16, 0.38, 0.92)
+	style.border_color = Color(0.30, 0.45, 0.85, 0.8)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	btn.add_theme_stylebox_override("normal", style)
+
+	var hover_style := StyleBoxFlat.new()
+	hover_style.bg_color = Color(0.16, 0.24, 0.52, 0.95)
+	hover_style.border_color = Color(0.50, 0.68, 1.0, 0.9)
+	hover_style.set_border_width_all(1)
+	hover_style.set_corner_radius_all(8)
+	btn.add_theme_stylebox_override("hover", hover_style)
+
+	btn.add_theme_font_size_override("font_size", 22)
+	btn.pressed.connect(func(): quests_inbox.open())
+	nav_layer.add_child(btn)
+
+
+func _on_quests_inbox_closed() -> void:
+	pass   # при необходимости — обновить карту или статус

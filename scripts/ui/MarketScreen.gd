@@ -7,6 +7,9 @@ class_name MarketScreen
 signal closed
 signal trade_completed
 
+const RESOURCE_ICON_URL := "/assets/images/resources/{id}/icon.png"
+const ICON_SIZE := 48
+
 var _planet_id:   int        = 0
 var _ship:        Dictionary = {}
 var _api:         ApiClient
@@ -170,12 +173,11 @@ func _add_placeholder(text: String) -> void:
 func _make_buy_row(item: Dictionary) -> Control:
 	var resource_id := int(item.get("resource_id", item.get("id", 0)))
 	var name_text   := str(item.get("resource_name", item.get("name", "?")))
-	var emoji       := str(item.get("emoji", "📦"))
 	var price: float = item.get("price", item.get("base_price", 0.0))
 	var stock: float = item.get("stock", item.get("availability", 0.0))
 	var weight: float = item.get("weight", 1.0)
 
-	var row := _make_row_base(emoji, name_text, price, "В наличии: %.0f т" % stock)
+	var row := _make_row_base(resource_id, name_text, price, "В наличии: %.0f т" % stock)
 
 	var qty_box := _make_qty_box(1, 999)
 	var qty_lbl: Label = qty_box.get_node("QtyLabel")
@@ -194,12 +196,11 @@ func _make_buy_row(item: Dictionary) -> Control:
 func _make_sell_row(cargo_item: Dictionary, market_item: Dictionary) -> Control:
 	var resource_id  := int(cargo_item.get("resource_id", 0))
 	var name_text    := str(cargo_item.get("resource_name", "?"))
-	var emoji        := str(cargo_item.get("emoji", "📦"))
 	var price: float  = market_item.get("price", market_item.get("base_price", 0.0))
 	var in_hold: int  = int(cargo_item.get("quantity", 0))
 	var weight: float = cargo_item.get("weight_per_unit", 1.0)
 
-	var row := _make_row_base(emoji, name_text, price, "В трюме: %d т" % in_hold)
+	var row := _make_row_base(resource_id, name_text, price, "В трюме: %d т" % in_hold)
 
 	var qty_box := _make_qty_box(1, in_hold)
 	var qty_lbl: Label = qty_box.get_node("QtyLabel")
@@ -215,10 +216,20 @@ func _make_sell_row(cargo_item: Dictionary, market_item: Dictionary) -> Control:
 	return row
 
 
-func _make_row_base(emoji: String, name_text: String, price: float, detail: String) -> HBoxContainer:
+func _make_row_base(resource_id: int, name_text: String, price: float, detail: String) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_constant_override("separation", 10)
+
+	# Icon
+	var icon_rect := TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(icon_rect)
+	_load_resource_icon(icon_rect, resource_id)
 
 	var info_box := VBoxContainer.new()
 	info_box.custom_minimum_size = Vector2(180, 0)
@@ -227,7 +238,7 @@ func _make_row_base(emoji: String, name_text: String, price: float, detail: Stri
 	row.add_child(info_box)
 
 	var name_lbl := Label.new()
-	name_lbl.text = emoji + "  " + name_text
+	name_lbl.text = name_text
 	name_lbl.add_theme_font_size_override("font_size", 24)
 	name_lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
 	name_lbl.clip_text = true
@@ -240,6 +251,36 @@ func _make_row_base(emoji: String, name_text: String, price: float, detail: Stri
 	info_box.add_child(detail_lbl)
 
 	return row
+
+
+func _load_resource_icon(target: TextureRect, resource_id: int) -> void:
+	var cache_key := "resource_%d" % resource_id
+	var cached = Session.texture_cache.get(cache_key)
+	if cached is ImageTexture:
+		target.texture = cached
+		return
+	if Session.texture_cache.get(cache_key) == false:
+		return  # previously failed, skip
+	var url := Session.api_base + RESOURCE_ICON_URL.replace("{id}", str(resource_id))
+	Session.texture_cache[cache_key] = null  # mark as loading
+	var http := HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(
+		func(result, code, _headers, body):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or code != 200 or body.is_empty():
+				Session.texture_cache[cache_key] = false
+				return
+			var img := Image.new()
+			if img.load_png_from_buffer(body) != OK:
+				Session.texture_cache[cache_key] = false
+				return
+			var tex := ImageTexture.create_from_image(img)
+			Session.texture_cache[cache_key] = tex
+			if is_instance_valid(target) and target.texture == null:
+				target.texture = tex
+	)
+	http.request(url)
 
 
 func _make_qty_box(min_val: int, max_val: int) -> HBoxContainer:

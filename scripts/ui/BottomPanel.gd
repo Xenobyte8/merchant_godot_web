@@ -10,6 +10,8 @@ signal destination_selected(planet_id: int)
 signal enter_city_requested(planet_id: int)
 
 const SHIP_ASSETS_URL_PATH := "/assets/images/"
+const RESOURCE_ICON_URL    := "/assets/images/resources/{id}/icon.png"
+const CARGO_ICON_SIZE      := 36
 const EXPANDED_H  := 320.0
 const COLLAPSED_H :=  80.0
 
@@ -374,16 +376,32 @@ func _make_ship_btn(ship: Dictionary) -> Control:
 		cargo_row.mouse_filter = Control.MOUSE_FILTER_PASS
 		vbox.add_child(cargo_row)
 		for item in cargo:
-			var qty: float  = item.get("quantity", 0.0)
+			var qty: float = item.get("quantity", 0.0)
 			if qty <= 0.0:
 				continue
-			var emoji: String = item.get("resource_emoji", "📦")
+			var res_id: int = item.get("resource_id", 0)
+			# icon + qty label
+			var cell := HBoxContainer.new()
+			cell.add_theme_constant_override("separation", 4)
+			cell.mouse_filter = Control.MOUSE_FILTER_PASS
+			cargo_row.add_child(cell)
+			var icon_rect := TextureRect.new()
+			icon_rect.custom_minimum_size = Vector2(CARGO_ICON_SIZE, CARGO_ICON_SIZE)
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon_rect.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
+			icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			icon_rect.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
+			icon_rect.mouse_filter = Control.MOUSE_FILTER_PASS
+			cell.add_child(icon_rect)
+			if res_id > 0:
+				_load_resource_icon(icon_rect, res_id)
 			var item_lbl := Label.new()
-			item_lbl.text = "%s %.0f" % [emoji, qty]
+			item_lbl.text = "%.0f" % qty
 			item_lbl.add_theme_font_size_override("font_size", 22)
 			item_lbl.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
+			item_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			item_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
-			cargo_row.add_child(item_lbl)
+			cell.add_child(item_lbl)
 
 	return btn
 
@@ -452,6 +470,38 @@ func _make_destination_btn(entry: Dictionary) -> Control:
 		frame.add_child(btn)
 
 	return frame
+
+
+func _load_resource_icon(target: TextureRect, resource_id: int) -> void:
+	var cache_key := "resource_%d" % resource_id
+	var cached = Session.texture_cache.get(cache_key)
+	if cached is ImageTexture:
+		target.texture = cached
+		return
+	if Session.texture_cache.get(cache_key) == false:
+		return
+	var url := Session.api_base + RESOURCE_ICON_URL.replace("{id}", str(resource_id))
+	if Session.texture_cache.get(cache_key) == null and cache_key in Session.texture_cache:
+		return  # already loading
+	Session.texture_cache[cache_key] = null
+	var http := HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(
+		func(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or code != 200 or body.is_empty():
+				Session.texture_cache[cache_key] = false
+				return
+			var img := Image.new()
+			if img.load_png_from_buffer(body) != OK:
+				Session.texture_cache[cache_key] = false
+				return
+			var tex := ImageTexture.create_from_image(img)
+			Session.texture_cache[cache_key] = tex
+			if is_instance_valid(target) and target.texture == null:
+				target.texture = tex
+	)
+	http.request(url)
 
 
 func _load_ship_icon(ship: Dictionary) -> void:

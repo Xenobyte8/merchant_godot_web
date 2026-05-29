@@ -24,10 +24,10 @@ var _initialized := false
 
 
 func _ready() -> void:
-	# В веб-сборке используем текущий origin (https://api.sonneprojecxt.xyz),
-	# чтобы не получать блокировку mixed-content при обращении к API.
+	# В веб-сборке используем фиксированный API-домен, чтобы запросы всегда
+	# шли на api.sonnegames независимо от origin фронта (stage.sonnegames).
 	if OS.has_feature("web"):
-		api_base = JavaScriptBridge.eval("window.location.origin")
+		api_base = "https://api.sonnegames.xyz"
 	_init_session()
 
 

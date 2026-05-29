@@ -25,7 +25,10 @@ rsync -az --delete \
   -e "ssh ${SSH_OPTS[*]}" \
   "$BUILD_DIR/" \
   "$SERVER:$REMOTE_DIR/"
-# FastAPI StaticFiles читает файлы с диска на каждый запрос — рестарт бэкенда не нужен.
+
+# Nginx работает от www-data — даём право на чтение после каждого rsync.
+ssh "${SSH_OPTS[@]}" "$SERVER" \
+  "chmod o+x /root /root/space_game /root/space_game/front /root/space_game/front/build /root/space_game/front/build/web && chmod -R o+r $REMOTE_DIR"
 
 echo ""
-echo "✓ Done — https://api.sonneprojecxt.xyz/"
+echo "✓ Done — https://stage.sonnegames.xyz/"
