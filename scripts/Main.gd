@@ -30,6 +30,7 @@ func _ready() -> void:
 	city_view.market_requested.connect(_on_market_requested)
 	city_view.closed.connect(func(): bottom_panel.collapse())
 	market_screen.closed.connect(func(): city_view.visible = true)
+	market_screen.trade_completed.connect(_refresh_after_trade)
 	camera.map_tapped.connect(_on_map_tapped)
 	_start()
 
@@ -60,6 +61,15 @@ func _refresh_map() -> bool:
 		return false
 	galaxy.set_state(data)
 	return true
+
+
+func _refresh_after_trade() -> void:
+	if not await _refresh_map():
+		return
+	if _current_planet_id > 0:
+		var updated_ships := galaxy.ships_at_planet(_current_planet_id)
+		_current_planet_ships = updated_ships
+		bottom_panel.show_planet(_current_planet_name, _current_planet_id, _current_planet_slug, updated_ships)
 
 
 func _start_polling() -> void:

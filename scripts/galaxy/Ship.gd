@@ -18,6 +18,7 @@ var is_in_transit: bool = false
 var location_id: int = 0
 var cargo_used: float = 0.0
 var cargo_capacity: float = 0.0
+var cargo: Array = []
 var dock_index: int = 0  # порядковый номер в ряду кораблей на планете
 
 # Статичная позиция (когда корабль стоит на планете)
@@ -52,6 +53,7 @@ func apply_data(d: Dictionary) -> void:
 	location_id   = int(d.get("location_id", 0))
 	cargo_used    = _to_f(d.get("cargo_used"), 0.0)
 	cargo_capacity = _to_f(d.get("cargo_capacity"), 0.0)
+	cargo         = d.get("cargo", [])
 
 	location_x = _to_f(d.get("location_x"), 50.0)
 	location_y = _to_f(d.get("location_y"), 50.0)

@@ -54,6 +54,7 @@ func ships_at_planet(planet_id: int) -> Array:
 				"slug":          s.slug,
 				"cargo_used":    s.cargo_used,
 				"cargo_capacity": s.cargo_capacity,
+				"cargo":         s.cargo,
 				"location_id":   s.location_id,
 			})
 	print("  -> found %d ships" % result.size())

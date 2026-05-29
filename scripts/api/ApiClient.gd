@@ -40,7 +40,7 @@ func get_planet_market(planet_id: int) -> Dictionary:
 
 
 func trade_buy(ship_id: int, planet_id: int, resource_id: int, quantity: float) -> Dictionary:
-	return await _post_query("/api/trade/buy", {
+	return await _post("/api/trade/buy", {
 		"telegram_id": Session.telegram_id,
 		"ship_id":     ship_id,
 		"planet_id":   planet_id,
@@ -50,7 +50,7 @@ func trade_buy(ship_id: int, planet_id: int, resource_id: int, quantity: float) 
 
 
 func trade_sell(ship_id: int, planet_id: int, resource_id: int, quantity: float) -> Dictionary:
-	return await _post_query("/api/trade/sell", {
+	return await _post("/api/trade/sell", {
 		"telegram_id": Session.telegram_id,
 		"ship_id":     ship_id,
 		"planet_id":   planet_id,
@@ -84,9 +84,18 @@ func _post(path: String, body: Dictionary) -> Dictionary:
 	var code: int        = result[1]
 	var raw: PackedByteArray = result[3]
 
-	if http_result != HTTPRequest.RESULT_SUCCESS or code != 200:
-		request_failed.emit("HTTP %d %s" % [code, path])
+	if http_result != HTTPRequest.RESULT_SUCCESS:
+		request_failed.emit("Ошибка сети %s" % path)
 		return {}
+
+	if code != 200:
+		var detail := "Ошибка HTTP %d" % code
+		var json2 := JSON.new()
+		if json2.parse(raw.get_string_from_utf8()) == OK:
+			var d = json2.get_data()
+			if d is Dictionary and d.has("detail"):
+				detail = str(d["detail"])
+		return {"_error": true, "detail": detail}
 
 	var json := JSON.new()
 	if json.parse(raw.get_string_from_utf8()) != OK:

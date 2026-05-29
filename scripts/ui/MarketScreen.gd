@@ -5,6 +5,7 @@ class_name MarketScreen
 # Открывается из CityView при клике по зданию Рынка.
 
 signal closed
+signal trade_completed
 
 var _planet_id:   int        = 0
 var _ship:        Dictionary = {}
@@ -296,6 +297,7 @@ func _do_buy(resource_id: int, quantity: float, weight_per_unit: float) -> void:
 	_ship["cargo_used"] = float(_ship.get("cargo_used", 0.0)) + actual_qty * weight_per_unit
 	_add_to_cargo(resource_id, actual_qty, str(result.get("resource", "")))
 	_update_cargo_label()
+	trade_completed.emit()
 	_load_market()
 
 
@@ -311,6 +313,7 @@ func _do_sell(resource_id: int, quantity: float, weight_per_unit: float) -> void
 	_ship["cargo_used"] = maxf(0.0, float(_ship.get("cargo_used", 0.0)) - actual_qty * weight_per_unit)
 	_remove_from_cargo(resource_id, actual_qty)
 	_update_cargo_label()
+	trade_completed.emit()
 	_load_market()
 
 
