@@ -117,7 +117,7 @@ func _build_ui() -> void:
 
 	var title_lbl := Label.new()
 	title_lbl.text = "📋  Общие задания"
-	title_lbl.add_theme_font_size_override("font_size", 32)
+	title_lbl.add_theme_font_size_override("font_size", 96)
 	title_lbl.add_theme_color_override("font_color", Color(0.88, 0.94, 1.0))
 	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title_lbl)
@@ -125,7 +125,7 @@ func _build_ui() -> void:
 	var close_btn := Button.new()
 	close_btn.text = "✕"
 	close_btn.flat = true
-	close_btn.add_theme_font_size_override("font_size", 26)
+	close_btn.add_theme_font_size_override("font_size", 78)
 	close_btn.add_theme_color_override("font_color", Color(0.55, 0.60, 0.72))
 	close_btn.pressed.connect(close_screen)
 	header.add_child(close_btn)
@@ -185,20 +185,20 @@ func _build_quest_card(q: Dictionary) -> PanelContainer:
 
 	var name_lbl := Label.new()
 	name_lbl.text = q["npc_name"]
-	name_lbl.add_theme_font_size_override("font_size", 16)
+	name_lbl.add_theme_font_size_override("font_size", 48)
 	name_lbl.add_theme_color_override("font_color", Color(0.98, 0.82, 0.42))
 	name_col.add_child(name_lbl)
 
 	var role_lbl := Label.new()
 	role_lbl.text = q["npc_role"]
-	role_lbl.add_theme_font_size_override("font_size", 12)
+	role_lbl.add_theme_font_size_override("font_size", 36)
 	role_lbl.add_theme_color_override("font_color", Color(0.45, 0.52, 0.68))
 	name_col.add_child(role_lbl)
 
 	# Дата
 	var date_lbl := Label.new()
 	date_lbl.text = q["received"]
-	date_lbl.add_theme_font_size_override("font_size", 11)
+	date_lbl.add_theme_font_size_override("font_size", 33)
 	date_lbl.add_theme_color_override("font_color", Color(0.40, 0.46, 0.62))
 	date_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	top_row.add_child(date_lbl)
@@ -211,7 +211,7 @@ func _build_quest_card(q: Dictionary) -> PanelContainer:
 	# ── Заголовок квеста ─────────────────────────────────────────────────────
 	var title_lbl := Label.new()
 	title_lbl.text = q["title"]
-	title_lbl.add_theme_font_size_override("font_size", 15)
+	title_lbl.add_theme_font_size_override("font_size", 45)
 	title_lbl.add_theme_color_override("font_color", Color(0.55, 0.82, 1.0))
 	title_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(title_lbl)
@@ -219,7 +219,7 @@ func _build_quest_card(q: Dictionary) -> PanelContainer:
 	# ── Текст квеста ─────────────────────────────────────────────────────────
 	var body_lbl := Label.new()
 	body_lbl.text = q["body"]
-	body_lbl.add_theme_font_size_override("font_size", 13)
+	body_lbl.add_theme_font_size_override("font_size", 39)
 	body_lbl.add_theme_color_override("font_color", Color(0.62, 0.68, 0.82))
 	body_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(body_lbl)
@@ -238,12 +238,12 @@ func _build_quest_card(q: Dictionary) -> PanelContainer:
 
 	var trophy_lbl := Label.new()
 	trophy_lbl.text = "🏆"
-	trophy_lbl.add_theme_font_size_override("font_size", 14)
+	trophy_lbl.add_theme_font_size_override("font_size", 42)
 	reward_row.add_child(trophy_lbl)
 
 	var reward_lbl := Label.new()
 	reward_lbl.text = "  Награда: " + q["reward"]
-	reward_lbl.add_theme_font_size_override("font_size", 13)
+	reward_lbl.add_theme_font_size_override("font_size", 39)
 	reward_lbl.add_theme_color_override("font_color", Color(0.38, 0.92, 0.62))
 	reward_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	reward_row.add_child(reward_lbl)
@@ -271,7 +271,7 @@ func _build_quest_card(q: Dictionary) -> PanelContainer:
 		var status_lbl := Label.new()
 		var is_accepted: bool = q["status"] == "accepted"
 		status_lbl.text = "✓  Задание принято" if is_accepted else "✗  Задание отклонено"
-		status_lbl.add_theme_font_size_override("font_size", 12)
+		status_lbl.add_theme_font_size_override("font_size", 36)
 		status_lbl.add_theme_color_override(
 			"font_color",
 			Color(0.38, 0.92, 0.62) if is_accepted else Color(0.52, 0.56, 0.68)
@@ -293,7 +293,7 @@ func _build_avatar(npc_name: String, color: Color) -> Control:
 	var initial_lbl := Label.new()
 	initial_lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	initial_lbl.text = npc_name.left(1).to_upper()
-	initial_lbl.add_theme_font_size_override("font_size", 22)
+	initial_lbl.add_theme_font_size_override("font_size", 66)
 	initial_lbl.add_theme_color_override("font_color", Color.WHITE)
 	initial_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	initial_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
@@ -310,7 +310,7 @@ func _build_avatar(npc_name: String, color: Color) -> Control:
 
 	var lbl2 := Label.new()
 	lbl2.text = npc_name.left(1).to_upper()
-	lbl2.add_theme_font_size_override("font_size", 22)
+	lbl2.add_theme_font_size_override("font_size", 66)
 	lbl2.add_theme_color_override("font_color", Color.WHITE)
 	lbl2.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl2.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
@@ -333,7 +333,7 @@ func _style_button(btn: Button, bg: Color, fg: Color) -> void:
 	btn.add_theme_stylebox_override("hover",  hover)
 	btn.add_theme_stylebox_override("pressed", hover)
 	btn.add_theme_color_override("font_color", fg)
-	btn.add_theme_font_size_override("font_size", 14)
+	btn.add_theme_font_size_override("font_size", 42)
 
 
 # ── Обработка кнопок ─────────────────────────────────────────────────────────

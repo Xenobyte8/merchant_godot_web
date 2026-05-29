@@ -11,7 +11,9 @@ const RESOURCE_ICON_URL := "/assets/images/resources/{id}/icon.png"
 const ICON_SIZE := 48
 
 var _planet_id:   int        = 0
-var _ship:        Dictionary = {}
+var _ship:        Dictionary = {}   # default ship for buying
+var _all_ships:   Array      = []   # all user ships at this planet
+var _sell_ship_idx: int      = -1   # -1 = all ships, >=0 = index in _all_ships
 var _api:         ApiClient
 var _market_data: Dictionary = {}
 var _tab:         String     = "buy"   # "buy" | "sell"
@@ -33,13 +35,15 @@ func _ready() -> void:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-func open(planet_id: int, ship: Dictionary, api: ApiClient) -> void:
-	_planet_id   = planet_id
-	_ship        = ship.duplicate(true)
-	_api         = api
-	_tab         = "buy"
-	_market_data = {}
-	visible      = true
+func open(planet_id: int, ship: Dictionary, api: ApiClient, all_ships: Array = []) -> void:
+	_planet_id     = planet_id
+	_ship          = ship.duplicate(true)
+	_all_ships     = all_ships.duplicate(true) if not all_ships.is_empty() else [ship.duplicate(true)]
+	_sell_ship_idx = -1 if _all_ships.size() > 1 else 0
+	_api           = api
+	_tab           = "buy"
+	_market_data   = {}
+	visible        = true
 	_update_cargo_label()
 	_set_tab_buttons("buy")
 	_load_market()
@@ -109,6 +113,7 @@ func _set_tab_buttons(tab: String) -> void:
 
 func _switch_tab(tab: String) -> void:
 	_set_tab_buttons(tab)
+	_update_cargo_label()
 	if not _market_data.is_empty():
 		_rebuild_list()
 
@@ -138,24 +143,81 @@ func _build_buy_list() -> void:
 
 
 func _build_sell_list() -> void:
-	var cargo: Array = _ship.get("cargo", [])
-	if cargo.is_empty():
-		_add_placeholder("Трюм пуст")
-		return
-	# Индекс потребляемых ресурсов по id
+	# ── Селектор корабля (только если кораблей больше одного) ────────────────
+	if _all_ships.size() > 1:
+		var selector := HBoxContainer.new()
+		selector.add_theme_constant_override("separation", 6)
+		_list_container.add_child(selector)
+
+		var _make_sel_btn := func(label: String, idx: int) -> Button:
+			var b := Button.new()
+			b.text = label
+			b.flat = (_sell_ship_idx != idx)
+			b.custom_minimum_size = Vector2(0, 44)
+			b.add_theme_font_size_override("font_size", 20)
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			b.pressed.connect(func():
+				_sell_ship_idx = idx
+				_rebuild_list()
+			)
+			return b
+
+		selector.add_child(_make_sel_btn.call("Все трюмы", -1))
+		for i in range(_all_ships.size()):
+			var short_name: String = _all_ships[i].get("name", "Корабль %d" % i)
+			if short_name.length() > 12:
+				short_name = short_name.substr(0, 11) + "…"
+			selector.add_child(_make_sel_btn.call(short_name, i))
+
+		var sep := HSeparator.new()
+		sep.add_theme_color_override("color", Color(0.3, 0.45, 0.7, 0.4))
+		_list_container.add_child(sep)
+
+	# ── Индекс покупаемых ресурсов ────────────────────────────────────────────
 	var consumes: Array = _market_data.get("consumes", [])
 	var consume_map: Dictionary = {}
 	for c in consumes:
 		consume_map[int(c.get("resource_id", c.get("id", 0)))] = c
 
-	var any_sellable := false
-	for cargo_item in cargo:
-		var rid := int(cargo_item.get("resource_id", 0))
-		if consume_map.has(rid):
-			_list_container.add_child(_make_sell_row(cargo_item, consume_map[rid]))
+	# ── Список товаров ─────────────────────────────────────────────────────────
+	if _sell_ship_idx == -1:
+		# Все трюмы: секция на каждый корабль
+		var any_sellable := false
+		for ship in _all_ships:
+			var cargo: Array = ship.get("cargo", [])
+			var ship_rows := []
+			for cargo_item in cargo:
+				var rid := int(cargo_item.get("resource_id", 0))
+				if consume_map.has(rid) and float(cargo_item.get("quantity", 0)) > 0:
+					ship_rows.append(_make_sell_row(ship, cargo_item, consume_map[rid]))
+			if ship_rows.is_empty():
+				continue
 			any_sellable = true
-	if not any_sellable:
-		_add_placeholder("Здесь не покупают ваш груз")
+			# Заголовок секции корабля
+			var used: float = ship.get("cargo_used", 0.0)
+			var cap:  float = ship.get("cargo_capacity", ship.get("effective_cargo_capacity", 0.0))
+			var hdr := Label.new()
+			hdr.text = "🚀  %s   (%.0f / %.0f т)" % [ship.get("name", "?"), used, cap]
+			hdr.add_theme_font_size_override("font_size", 20)
+			hdr.add_theme_color_override("font_color", Color(0.65, 0.80, 1.0))
+			hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			_list_container.add_child(hdr)
+			for row in ship_rows:
+				_list_container.add_child(row)
+		if not any_sellable:
+			_add_placeholder("Здесь не покупают ваш груз")
+	else:
+		# Конкретный корабль
+		var ship: Dictionary = _all_ships[_sell_ship_idx]
+		var cargo: Array = ship.get("cargo", [])
+		var any_sellable := false
+		for cargo_item in cargo:
+			var rid := int(cargo_item.get("resource_id", 0))
+			if consume_map.has(rid) and float(cargo_item.get("quantity", 0)) > 0:
+				_list_container.add_child(_make_sell_row(ship, cargo_item, consume_map[rid]))
+				any_sellable = true
+		if not any_sellable:
+			_add_placeholder("Трюм пуст или здесь не покупают ваш груз")
 
 
 func _add_placeholder(text: String) -> void:
@@ -193,7 +255,7 @@ func _make_buy_row(item: Dictionary) -> Control:
 	return row
 
 
-func _make_sell_row(cargo_item: Dictionary, market_item: Dictionary) -> Control:
+func _make_sell_row(ship: Dictionary, cargo_item: Dictionary, market_item: Dictionary) -> Control:
 	var resource_id  := int(cargo_item.get("resource_id", 0))
 	var name_text    := str(cargo_item.get("resource_name", "?"))
 	var price: float  = market_item.get("price", market_item.get("base_price", 0.0))
@@ -210,7 +272,7 @@ func _make_sell_row(cargo_item: Dictionary, market_item: Dictionary) -> Control:
 	btn.text = "Продать"
 	btn.custom_minimum_size = Vector2(100, 0)
 	btn.add_theme_font_size_override("font_size", 22)
-	btn.pressed.connect(func(): _do_sell(resource_id, float(qty_lbl.text), weight))
+	btn.pressed.connect(func(): _do_sell(ship, resource_id, float(qty_lbl.text), weight))
 	row.add_child(btn)
 
 	return row
@@ -342,8 +404,8 @@ func _do_buy(resource_id: int, quantity: float, weight_per_unit: float) -> void:
 	_load_market()
 
 
-func _do_sell(resource_id: int, quantity: float, weight_per_unit: float) -> void:
-	var ship_id := int(_ship.get("id", 0))
+func _do_sell(ship: Dictionary, resource_id: int, quantity: float, weight_per_unit: float) -> void:
+	var ship_id := int(ship.get("id", 0))
 	var result  := await _api.trade_sell(ship_id, _planet_id, resource_id, quantity)
 	if result.get("_error", false):
 		_show_trade_error(result.get("detail", "Ошибка продажи"))
@@ -351,8 +413,8 @@ func _do_sell(resource_id: int, quantity: float, weight_per_unit: float) -> void
 	if result.is_empty():
 		return
 	var actual_qty: float = result.get("quantity", quantity)
-	_ship["cargo_used"] = maxf(0.0, float(_ship.get("cargo_used", 0.0)) - actual_qty * weight_per_unit)
-	_remove_from_cargo(resource_id, actual_qty)
+	ship["cargo_used"] = maxf(0.0, float(ship.get("cargo_used", 0.0)) - actual_qty * weight_per_unit)
+	_remove_from_ship_cargo(ship, resource_id, actual_qty)
 	_update_cargo_label()
 	trade_completed.emit()
 	_load_market()
@@ -369,8 +431,8 @@ func _add_to_cargo(resource_id: int, qty: float, name_text: String) -> void:
 	_ship["cargo"] = cargo
 
 
-func _remove_from_cargo(resource_id: int, qty: float) -> void:
-	var cargo: Array = _ship.get("cargo", [])
+func _remove_from_ship_cargo(ship: Dictionary, resource_id: int, qty: float) -> void:
+	var cargo: Array = ship.get("cargo", [])
 	for i in range(cargo.size()):
 		if int(cargo[i].get("resource_id", 0)) == resource_id:
 			cargo[i]["quantity"] = float(cargo[i].get("quantity", 0.0)) - qty
@@ -380,11 +442,18 @@ func _remove_from_cargo(resource_id: int, qty: float) -> void:
 
 
 func _update_cargo_label() -> void:
-	var used: float = _ship.get("cargo_used", 0.0)
-	var cap:  float = _ship.get("effective_cargo_capacity",
-		_ship.get("cargo_capacity", 0.0))
-	_cargo_label.text = "%s  •  Груз: %.0f / %.0f т" % [
-		_ship.get("name", "Корабль"), used, cap]
+	if _tab == "sell" and _sell_ship_idx == -1 and _all_ships.size() > 1:
+		var total_used := 0.0
+		var total_cap  := 0.0
+		for s in _all_ships:
+			total_used += float(s.get("cargo_used", 0.0))
+			total_cap  += float(s.get("effective_cargo_capacity", s.get("cargo_capacity", 0.0)))
+		_cargo_label.text = "Все корабли (%d)  •  Груз: %.0f / %.0f т" % [_all_ships.size(), total_used, total_cap]
+	else:
+		var ship: Dictionary = _all_ships[max(0, _sell_ship_idx)] if not _all_ships.is_empty() else _ship
+		var used: float = ship.get("cargo_used", 0.0)
+		var cap:  float = ship.get("effective_cargo_capacity", ship.get("cargo_capacity", 0.0))
+		_cargo_label.text = "%s  •  Груз: %.0f / %.0f т" % [ship.get("name", "Корабль"), used, cap]
 
 
 # ── Build UI ──────────────────────────────────────────────────────────────────

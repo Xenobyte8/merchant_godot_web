@@ -96,8 +96,7 @@ func _on_ship_selected(ship: Dictionary) -> void:
 	bottom_panel.show_ship(ship, api)
 
 
-func _on_destination_selected(planet_id: int) -> void:
-	var ship_id: int = bottom_panel.current_ship.get("id", 0)
+func _on_destination_selected(ship_id: int, planet_id: int) -> void:
 	var result := await api.fly_ship(ship_id, planet_id)
 	if not result.is_empty():
 		await _refresh_map()
@@ -124,7 +123,7 @@ func _on_market_requested(planet_id: int) -> void:
 	if ship.is_empty():
 		return
 	city_view.visible = false
-	market_screen.open(planet_id, ship, api)
+	market_screen.open(planet_id, ship, api, _current_planet_ships)
 
 
 func _on_api_failed(message: String) -> void:

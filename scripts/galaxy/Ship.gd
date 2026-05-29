@@ -20,6 +20,7 @@ var cargo_used: float = 0.0
 var cargo_capacity: float = 0.0
 var cargo: Array = []
 var dock_index: int = 0  # порядковый номер в ряду кораблей на планете
+var is_own: bool = false  # принадлежит текущему пользователю
 
 # Статичная позиция (когда корабль стоит на планете)
 var location_x: float = 50.0
@@ -54,6 +55,7 @@ func apply_data(d: Dictionary) -> void:
 	cargo_used    = _to_f(d.get("cargo_used"), 0.0)
 	cargo_capacity = _to_f(d.get("cargo_capacity"), 0.0)
 	cargo         = d.get("cargo", [])
+	is_own        = not bool(d.get("is_bot", false)) and not bool(d.get("is_other", false))
 
 	location_x = _to_f(d.get("location_x"), 50.0)
 	location_y = _to_f(d.get("location_y"), 50.0)

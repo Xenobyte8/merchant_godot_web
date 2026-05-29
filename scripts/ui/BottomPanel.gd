@@ -6,7 +6,7 @@ class_name BottomPanel
 # Layout: [иконка объекта] | [название + характеристики] | [список действий (скролл)]
 
 signal ship_selected(ship: Dictionary)
-signal destination_selected(planet_id: int)
+signal destination_selected(ship_id: int, planet_id: int)
 signal enter_city_requested(planet_id: int)
 
 const SHIP_ASSETS_URL_PATH := "/assets/images/"
@@ -25,16 +25,17 @@ var _state:     State = State.EMPTY
 var _api:       ApiClient
 var _fetch_seq: int = 0   # инкрементируется при каждом show_ship; отменяет устаревшие ответы
 
-var _panel:       Panel
-var _bar_btn:     Button
-var _bar_label:   Label
-var _main_row:    HBoxContainer
-var _icon:        TextureRect
-var _title:       Label
-var _subtitle:    Label
-var _extra:       Label
-var _action_list: VBoxContainer
-var _tween:       Tween
+var _panel:            Panel
+var _bar_btn:          Button
+var _bar_label:        Label
+var _main_row:         HBoxContainer
+var _icon:             TextureRect
+var _title:            Label
+var _subtitle:         Label
+var _extra:            Label
+var _action_list:      VBoxContainer
+var _cargo_detail_box: VBoxContainer
+var _tween:            Tween
 
 
 func _ready() -> void:
@@ -63,6 +64,7 @@ func show_planet(planet_name: String, planet_id: int, planet_slug: String, ships
 	_extra.text        = ""
 	_bar_label.text    = "▼  " + planet_name
 	_clear_actions()
+	_clear_cargo_detail()
 
 	# ── Заголовок: название планеты слева, кнопка входа справа ──────────────
 	var header := HBoxContainer.new()
@@ -126,6 +128,7 @@ func show_ship(ship: Dictionary, api: ApiClient) -> void:
 	_bar_label.text = "▼  " + _title.text
 
 	_clear_actions()
+	_clear_cargo_detail()
 	_load_ship_icon(ship)
 	_expand()
 
@@ -142,7 +145,8 @@ func show_ship(ship: Dictionary, api: ApiClient) -> void:
 		return  # состояние сменилось, пока загружали маршруты
 	loading.queue_free()
 	for entry in times:
-		_action_list.add_child(_make_destination_btn(entry))
+		_action_list.add_child(_make_destination_btn(ship_id, entry))
+	_fill_cargo_detail(ship.get("cargo", []))
 
 
 func collapse() -> void:
@@ -152,6 +156,7 @@ func collapse() -> void:
 	_state       = State.EMPTY
 	current_ship = {}
 	_bar_label.text = "▲  Выберите планету"
+	_clear_cargo_detail()
 	_animate_panel(COLLAPSED_H)
 
 
@@ -248,8 +253,8 @@ func _build_ui() -> void:
 	var info_box := VBoxContainer.new()
 	info_box.size_flags_horizontal    = Control.SIZE_EXPAND_FILL
 	info_box.size_flags_stretch_ratio = 1.0
-	info_box.size_flags_vertical  = Control.SIZE_SHRINK_CENTER
-	info_box.add_theme_constant_override("separation", 10)
+	info_box.size_flags_vertical      = Control.SIZE_EXPAND_FILL
+	info_box.add_theme_constant_override("separation", 8)
 	_main_row.add_child(info_box)
 
 	_title = Label.new()
@@ -269,6 +274,21 @@ func _build_ui() -> void:
 	_extra.add_theme_color_override("font_color", Color(0.55, 0.65, 0.8))
 	_extra.clip_text = true
 	info_box.add_child(_extra)
+
+	# ── Детали груза (заполняются в show_ship) ───────────────────────────────
+	var cargo_sep := HSeparator.new()
+	cargo_sep.add_theme_color_override("color", Color(0.2, 0.3, 0.55, 0.6))
+	info_box.add_child(cargo_sep)
+
+	var cargo_scroll := ScrollContainer.new()
+	cargo_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	cargo_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	info_box.add_child(cargo_scroll)
+
+	_cargo_detail_box = VBoxContainer.new()
+	_cargo_detail_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_cargo_detail_box.add_theme_constant_override("separation", 6)
+	cargo_scroll.add_child(_cargo_detail_box)
 
 
 # ── Internals ──────────────────────────────────────────────────────────────────
@@ -313,6 +333,96 @@ func _on_viewport_resized() -> void:
 func _clear_actions() -> void:
 	for child in _action_list.get_children():
 		child.queue_free()
+
+
+func _clear_cargo_detail() -> void:
+	if _cargo_detail_box == null:
+		return
+	for child in _cargo_detail_box.get_children():
+		child.queue_free()
+
+
+func _fill_cargo_detail(cargo: Array) -> void:
+	_clear_cargo_detail()
+	if cargo.is_empty():
+		var lbl := Label.new()
+		lbl.text = "Трюм пуст"
+		lbl.add_theme_font_size_override("font_size", 20)
+		lbl.add_theme_color_override("font_color", Color(0.5, 0.52, 0.58))
+		_cargo_detail_box.add_child(lbl)
+		return
+
+	# Заголовок колонок
+	var header_row := HBoxContainer.new()
+	header_row.add_theme_constant_override("separation", 8)
+	_cargo_detail_box.add_child(header_row)
+
+	for col_text in ["Ресурс", "Ед.", "Масса"]:
+		var h := Label.new()
+		h.text = col_text
+		h.add_theme_font_size_override("font_size", 18)
+		h.add_theme_color_override("font_color", Color(0.45, 0.55, 0.75))
+		if col_text == "Ресурс":
+			h.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		else:
+			h.horizontal_alignment  = HORIZONTAL_ALIGNMENT_RIGHT
+			h.custom_minimum_size   = Vector2(80, 0)
+		header_row.add_child(h)
+
+	# Строки груза
+	for item in cargo:
+		var qty: float   = item.get("quantity", 0.0)
+		if qty <= 0.0:
+			continue
+		var res_id: int  = item.get("resource_id", 0)
+		var res_name: String = item.get("resource_name", "Ресурс %d" % res_id)
+		var weight: float = item.get("weight_per_unit", 1.0)
+		var total_mass := qty * weight
+
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		_cargo_detail_box.add_child(row)
+
+		# Иконка
+		var icon_rect := TextureRect.new()
+		icon_rect.custom_minimum_size   = Vector2(CARGO_ICON_SIZE, CARGO_ICON_SIZE)
+		icon_rect.stretch_mode          = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_rect.expand_mode           = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
+		icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		row.add_child(icon_rect)
+		if res_id > 0:
+			_load_resource_icon(icon_rect, res_id)
+
+		# Название
+		var name_lbl := Label.new()
+		name_lbl.text = res_name
+		name_lbl.add_theme_font_size_override("font_size", 22)
+		name_lbl.add_theme_color_override("font_color", Color(0.88, 0.92, 1.0))
+		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_lbl.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
+		name_lbl.clip_text = true
+		row.add_child(name_lbl)
+
+		# Единицы груза
+		var qty_lbl := Label.new()
+		qty_lbl.text = "%.0f ед." % qty
+		qty_lbl.add_theme_font_size_override("font_size", 22)
+		qty_lbl.add_theme_color_override("font_color", Color(0.65, 0.90, 0.65))
+		qty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		qty_lbl.custom_minimum_size  = Vector2(80, 0)
+		qty_lbl.size_flags_vertical  = Control.SIZE_SHRINK_CENTER
+		row.add_child(qty_lbl)
+
+		# Масса в тоннах
+		var mass_lbl := Label.new()
+		mass_lbl.text = "%.1f т" % total_mass
+		mass_lbl.add_theme_font_size_override("font_size", 22)
+		mass_lbl.add_theme_color_override("font_color", Color(0.65, 0.78, 1.0))
+		mass_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		mass_lbl.custom_minimum_size  = Vector2(80, 0)
+		mass_lbl.size_flags_vertical  = Control.SIZE_SHRINK_CENTER
+		row.add_child(mass_lbl)
 
 
 func _make_ship_btn(ship: Dictionary) -> Control:
@@ -406,7 +516,7 @@ func _make_ship_btn(ship: Dictionary) -> Control:
 	return btn
 
 
-func _make_destination_btn(entry: Dictionary) -> Control:
+func _make_destination_btn(ship_id: int, entry: Dictionary) -> Control:
 	var planet_id:   int    = entry.get("planet_id", 0)
 	var planet_name: String = entry.get("planet_name", "")
 	var image_slug:  String = entry.get("image_slug", "")
@@ -464,7 +574,7 @@ func _make_destination_btn(entry: Dictionary) -> Control:
 		btn.flat = true
 		btn.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		btn.pressed.connect(func() -> void:
-			destination_selected.emit(planet_id)
+			destination_selected.emit(ship_id, planet_id)
 			collapse()
 		)
 		frame.add_child(btn)

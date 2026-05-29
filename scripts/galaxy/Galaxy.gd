@@ -47,7 +47,7 @@ func ships_at_planet(planet_id: int) -> Array:
 	print("[Galaxy] ships_at_planet planet_id=%d  total_ships=%d" % [planet_id, _ships.size()])
 	for s in _ships.values():
 		print("  ship id=%d name='%s' in_transit=%s location_id=%d" % [s.ship_id, s.ship_name, s.is_in_transit, s.location_id])
-		if not s.is_in_transit and s.location_id == planet_id:
+		if not s.is_in_transit and s.location_id == planet_id and s.is_own:
 			result.append({
 				"id":            s.ship_id,
 				"name":          s.ship_name,
