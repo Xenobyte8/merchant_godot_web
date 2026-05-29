@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://dvaqynj2e13om"]
+
+[ext_resource type="Script" uid="uid://cwl786cs4lp3w" path="res://scripts/Main.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://ct2rha7akkda1" path="res://scripts/api/ApiClient.gd" id="2_api"]
+[ext_resource type="Script" uid="uid://dvdukik1nm4do" path="res://scripts/galaxy/Galaxy.gd" id="3_galaxy"]
+[ext_resource type="Script" uid="uid://cj7kwpgqs6yaw" path="res://scripts/ui/StatusOverlay.gd" id="4_status"]
+[ext_resource type="Script" uid="uid://bai7r745rqydk" path="res://scripts/galaxy/StarField.gd" id="5_stars"]
+[ext_resource type="Script" uid="uid://bcfauww5d5upx" path="res://scripts/galaxy/MapCamera.gd" id="6_camera"]
+[ext_resource type="Script" path="res://scripts/ui/BottomPanel.gd" id="7_bottom_panel"]
+[ext_resource type="Script" path="res://scripts/ui/CityView.gd" id="8_city_view"]
+[ext_resource type="Script" path="res://scripts/ui/MarketScreen.gd" id="9_market_screen"]
+
+[node name="Main" type="Node2D" unique_id=16975869]
+script = ExtResource("1_main")
+
+[node name="BackgroundLayer" type="CanvasLayer" parent="." unique_id=277458485]
+layer = -10
+
+[node name="Background" type="ColorRect" parent="BackgroundLayer" unique_id=425716880]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 1)
+
+[node name="StarField" type="CanvasLayer" parent="." unique_id=1173462654]
+script = ExtResource("5_stars")
+
+[node name="ApiClient" type="Node" parent="." unique_id=74821644]
+script = ExtResource("2_api")
+
+[node name="Galaxy" type="Node2D" parent="." unique_id=1739178226]
+script = ExtResource("3_galaxy")
+
+[node name="MapCamera" type="Camera2D" parent="." unique_id=2048732847]
+script = ExtResource("6_camera")
+
+[node name="StatusOverlay" type="CanvasLayer" parent="." unique_id=778001871]
+script = ExtResource("4_status")
+
+[node name="BottomPanel" type="CanvasLayer" parent="."]
+script = ExtResource("7_bottom_panel")
+
+[node name="CityView" type="CanvasLayer" parent="."]
+script = ExtResource("8_city_view")
+
+[node name="MarketScreen" type="CanvasLayer" parent="."]
+script = ExtResource("9_market_screen")

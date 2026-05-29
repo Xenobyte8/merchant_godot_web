@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>$GODOT_PROJECT_NAME</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+      #canvas {
+        display: block; width: 100%; height: 100%;
+        /* Запрещаем браузеру перехватывать drag/pinch/select */
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
+      }
+
+      #game-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.4s ease;
+      }
+      #game-loader.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #game-loader img {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+      }
+    </style>
+    $GODOT_HEAD_INCLUDE
+  </head>
+  <body>
+    <div id="game-loader">
+      <img src="loader.gif" alt="">
+    </div>
+    <canvas id="canvas"></canvas>
+
+    <!--
+      Yandex Games SDK.
+      В архиве для консоли разработчика путь /sdk.js (относительный).
+      На своём домене заменить на https://sdk.games.s3.yandex.net/sdk.js
+    -->
+    <script async src="/sdk.js" onload="initYandexSDK()"></script>
+    <script>
+      window.ysdk = null;
+
+      async function initYandexSDK() {
+        try {
+          window.ysdk = await YaGames.init();
+
+          // Форвардим системные события паузы в пользовательские события,
+          // чтобы YandexSDK.gd мог подписаться через addEventListener.
+          window.ysdk.on('game_api_pause', function () {
+            window.dispatchEvent(new CustomEvent('__ysdk_pause'));
+          });
+          window.ysdk.on('game_api_resume', function () {
+            window.dispatchEvent(new CustomEvent('__ysdk_resume'));
+          });
+        } catch (e) {
+          console.warn('[YaSDK] init failed:', e);
+        }
+      }
+    </script>
+
+    <!-- JS-мост для GDScript. Загружается синхронно до старта движка. -->
+    <script src="bridge.js"></script>
+
+    <!-- Godot engine -->
+    <script src="$GODOT_URL"></script>
+    <script>
+      var engine = new Engine($GODOT_CONFIG);
+      engine.startGame({ canvas: document.getElementById('canvas') });
+
+      // Pointer capture: при drag за границу canvas события не теряются
+      var canvas = document.getElementById('canvas');
+      canvas.addEventListener('pointerdown', function(e) {
+        canvas.setPointerCapture(e.pointerId);
+      });
+    </script>
+  </body>
+</html>
