@@ -9,7 +9,7 @@ signal map_tapped
 # - ЛКМ/СКМ/ПКМ перетаскивание — пан
 # - PanGesture (тачпады) — пан
 
-const MIN_ZOOM_FACTOR     := 0.25
+const MIN_ZOOM_FACTOR     := 0.50
 const MAX_ZOOM_FACTOR     := 6.0
 const DEFAULT_ZOOM_FACTOR := 0.8
 const WHEEL_STEP          := 1.04

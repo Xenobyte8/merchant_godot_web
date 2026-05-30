@@ -22,8 +22,10 @@
         z-index: 9999;
         background: #000;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: 20px;
         transition: opacity 0.4s ease;
       }
       #game-loader.hidden {
@@ -31,9 +33,30 @@
         pointer-events: none;
       }
       #game-loader img {
-        width: 120px;
-        height: 120px;
+        width: 156px;
+        height: 156px;
         object-fit: contain;
+      }
+      #game-loader span {
+        color: #cce4ff;
+        font-family: system-ui, sans-serif;
+        font-size: 15px;
+        letter-spacing: 0.06em;
+        opacity: 0.75;
+      }
+      #loader-bar-bg {
+        width: 200px;
+        height: 6px;
+        background: #0e1830;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      #loader-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: #4d9eff;
+        border-radius: 3px;
+        transition: width 0.2s ease;
       }
     </style>
     <link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
@@ -42,7 +65,9 @@
   </head>
   <body>
     <div id="game-loader">
+      <span>Загрузка...</span>
       <img src="loader.gif" alt="">
+      <div id="loader-bar-bg"><div id="loader-bar-fill"></div></div>
     </div>
     <canvas id="canvas"></canvas>
 
@@ -79,8 +104,16 @@
     <!-- Godot engine -->
     <script src="index.js"></script>
     <script>
-      var engine = new Engine({"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":87636,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4});
-      engine.startGame({ canvas: document.getElementById('canvas') });
+      var engine = new Engine({"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":95988,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4});
+      var loaderFill = document.getElementById('loader-bar-fill');
+      engine.startGame({
+        canvas: document.getElementById('canvas'),
+        onProgress: function (current, total) {
+          if (total > 0 && loaderFill) {
+            loaderFill.style.width = Math.min(100, Math.round(current / total * 100)) + '%';
+          }
+        }
+      });
 
       // Pointer capture: при drag за границу canvas события не теряются
       var canvas = document.getElementById('canvas');

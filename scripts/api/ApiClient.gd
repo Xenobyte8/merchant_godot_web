@@ -20,6 +20,10 @@ func get_map_state() -> Dictionary:
 	return await _post("/api/map/state", {"telegram_id": Session.telegram_id})
 
 
+func get_profile() -> Dictionary:
+	return await _get_request("/api/users/me?telegram_id=%d" % Session.telegram_id)
+
+
 func fly_ship(ship_id: int, destination_id: int) -> Dictionary:
 	return await _post("/api/ships/fly", {
 		"telegram_id":    Session.telegram_id,

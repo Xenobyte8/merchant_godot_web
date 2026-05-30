@@ -11,6 +11,7 @@ extends Node2D
 @onready var market_screen:  MarketScreen      = $MarketScreen
 @onready var quests_inbox:   QuestsInboxScreen = $QuestsInboxScreen
 @onready var camera:         MapCamera         = $MapCamera
+@onready var top_bar:        TopBar            = $TopBar
 
 const POLL_INTERVAL_SEC := 10.0
 
@@ -34,24 +35,27 @@ func _ready() -> void:
 	market_screen.trade_completed.connect(_refresh_after_trade)
 	quests_inbox.closed.connect(_on_quests_inbox_closed)
 	camera.map_tapped.connect(_on_map_tapped)
-	_add_quests_button()
+	top_bar.messages_pressed.connect(func(): quests_inbox.open())
 	_start()
 
 
 func _start() -> void:
 	await Session.ensure_ready()
-	status.show_status("Авторизация...")
+	status.show_status("Авторизация...", 0.05)
 	var auth := await api.auth_test_user()
 	if auth.is_empty():
 		return
 
-	status.show_status("Загрузка карты...")
+	status.show_status("Загрузка карты...", 0.35)
 	if not await _refresh_map():
 		return
 
-	status.show_status("Загрузка изображений...")
+	status.show_status("Загрузка изображений...", 0.70)
 	await galaxy.wait_textures_loaded()
 
+	status.show_status("Готово!", 1.0)
+	_refresh_balance()
+	await get_tree().create_timer(0.3).timeout
 	status.clear()
 	YandexSDK.signal_loaded()
 	galaxy.preload_location_cards()  # фоновый прекэш картинок планет
@@ -67,12 +71,19 @@ func _refresh_map() -> bool:
 
 
 func _refresh_after_trade() -> void:
+	_refresh_balance()
 	if not await _refresh_map():
 		return
 	if _current_planet_id > 0:
 		var updated_ships := galaxy.ships_at_planet(_current_planet_id)
 		_current_planet_ships = updated_ships
 		bottom_panel.show_planet(_current_planet_name, _current_planet_id, _current_planet_slug, updated_ships)
+
+
+func _refresh_balance() -> void:
+	var profile := await api.get_profile()
+	if not profile.is_empty() and profile.has("balance"):
+		top_bar.set_balance(float(profile["balance"]))
 
 
 func _start_polling() -> void:
@@ -128,47 +139,6 @@ func _on_market_requested(planet_id: int) -> void:
 
 func _on_api_failed(message: String) -> void:
 	status.show_error(message)
-
-
-# ── Кнопка «Общие задания» (верхний правый угол) ─────────────────────────────
-
-func _add_quests_button() -> void:
-	var nav_layer := CanvasLayer.new()
-	nav_layer.layer = 8   # ниже оверлеев экранов, но выше карты
-	add_child(nav_layer)
-
-	var btn := Button.new()
-	btn.text = "📋"
-	btn.tooltip_text = "Общие задания"
-	btn.flat = false
-
-	# Позиция в правом верхнем углу
-	btn.anchor_left   = 1.0
-	btn.anchor_right  = 1.0
-	btn.anchor_top    = 0.0
-	btn.anchor_bottom = 0.0
-	btn.offset_left   = -56
-	btn.offset_right  = -8
-	btn.offset_top    =  8
-	btn.offset_bottom =  48
-
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.10, 0.16, 0.38, 0.92)
-	style.border_color = Color(0.30, 0.45, 0.85, 0.8)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(8)
-	btn.add_theme_stylebox_override("normal", style)
-
-	var hover_style := StyleBoxFlat.new()
-	hover_style.bg_color = Color(0.16, 0.24, 0.52, 0.95)
-	hover_style.border_color = Color(0.50, 0.68, 1.0, 0.9)
-	hover_style.set_border_width_all(1)
-	hover_style.set_corner_radius_all(8)
-	btn.add_theme_stylebox_override("hover", hover_style)
-
-	btn.add_theme_font_size_override("font_size", 22)
-	btn.pressed.connect(func(): quests_inbox.open())
-	nav_layer.add_child(btn)
 
 
 func _on_quests_inbox_closed() -> void:

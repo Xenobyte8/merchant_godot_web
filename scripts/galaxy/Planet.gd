@@ -7,7 +7,7 @@ class_name Planet
 signal pressed(planet_id: int)
 signal texture_ready
 
-const SIZE := 160.0
+const SIZE := 320.0
 const ASSETS_URL_PATH := "/assets/images/"
 
 var planet_id: int   = 0

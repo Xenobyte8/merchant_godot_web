@@ -10,6 +10,8 @@
 [ext_resource type="Script" path="res://scripts/ui/CityView.gd" id="8_city_view"]
 [ext_resource type="Script" path="res://scripts/ui/MarketScreen.gd" id="9_market_screen"]
 [ext_resource type="Script" path="res://scripts/ui/QuestsInboxScreen.gd" id="10_quests_inbox"]
+[ext_resource type="Script" path="res://scripts/ui/TopBar.gd" id="11_top_bar"]
+[ext_resource type="Script" path="res://scripts/ui/FrameOverlay.gd" id="12_frame_overlay"]
 
 [node name="Main" type="Node2D" unique_id=16975869]
 script = ExtResource("1_main")
@@ -49,3 +51,9 @@ script = ExtResource("9_market_screen")
 
 [node name="QuestsInboxScreen" type="CanvasLayer" parent="."]
 script = ExtResource("10_quests_inbox")
+
+[node name="TopBar" type="CanvasLayer" parent="."]
+script = ExtResource("11_top_bar")
+
+[node name="FrameOverlay" type="CanvasLayer" parent="."]
+script = ExtResource("12_frame_overlay")

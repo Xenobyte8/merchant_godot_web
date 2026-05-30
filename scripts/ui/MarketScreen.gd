@@ -76,7 +76,7 @@ func _show_loading() -> void:
 	var lbl := Label.new()
 	lbl.text = "Загрузка..."
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 24)
+	lbl.add_theme_font_size_override("font_size", 96)
 	lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
 	_list_container.add_child(lbl)
 
@@ -86,7 +86,7 @@ func _show_error(msg: String) -> void:
 	var lbl := Label.new()
 	lbl.text = msg
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 22)
+	lbl.add_theme_font_size_override("font_size", 88)
 	lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
 	_list_container.add_child(lbl)
 
@@ -154,7 +154,7 @@ func _build_sell_list() -> void:
 			b.text = label
 			b.flat = (_sell_ship_idx != idx)
 			b.custom_minimum_size = Vector2(0, 44)
-			b.add_theme_font_size_override("font_size", 20)
+			b.add_theme_font_size_override("font_size", 80)
 			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			b.pressed.connect(func():
 				_sell_ship_idx = idx
@@ -198,7 +198,7 @@ func _build_sell_list() -> void:
 			var cap:  float = ship.get("cargo_capacity", ship.get("effective_cargo_capacity", 0.0))
 			var hdr := Label.new()
 			hdr.text = "🚀  %s   (%.0f / %.0f т)" % [ship.get("name", "?"), used, cap]
-			hdr.add_theme_font_size_override("font_size", 20)
+			hdr.add_theme_font_size_override("font_size", 80)
 			hdr.add_theme_color_override("font_color", Color(0.65, 0.80, 1.0))
 			hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			_list_container.add_child(hdr)
@@ -225,7 +225,7 @@ func _add_placeholder(text: String) -> void:
 	lbl.text                  = text
 	lbl.horizontal_alignment  = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	lbl.add_theme_font_size_override("font_size", 22)
+	lbl.add_theme_font_size_override("font_size", 88)
 	lbl.add_theme_color_override("font_color", Color(0.45, 0.45, 0.5))
 	_list_container.add_child(lbl)
 
@@ -233,22 +233,33 @@ func _add_placeholder(text: String) -> void:
 # ── Row factories ─────────────────────────────────────────────────────────────
 
 func _make_buy_row(item: Dictionary) -> Control:
-	var resource_id := int(item.get("resource_id", item.get("id", 0)))
-	var name_text   := str(item.get("resource_name", item.get("name", "?")))
-	var price: float = item.get("price", item.get("base_price", 0.0))
-	var stock: float = item.get("stock", item.get("availability", 0.0))
+	var resource_id  := int(item.get("resource_id", item.get("id", 0)))
+	var name_text    := str(item.get("resource_name", item.get("name", "?")))
+	var price: float  = item.get("price", item.get("base_price", 0.0))
+	var stock: float  = item.get("stock", item.get("availability", 0.0))
 	var weight: float = item.get("weight", 1.0)
+	var tax_rate: float = _market_data.get("trade_tax", 0.0)
+	var factor: float   = 1.0 + tax_rate  # покупатель платит налог сверху
 
 	var row := _make_row_base(resource_id, name_text, price, "В наличии: %.0f т" % stock)
+	var info_box: VBoxContainer = row.get_child(1)
 
-	var qty_box := _make_qty_box(1, 999)
+	var total_lbl := Label.new()
+	total_lbl.add_theme_font_size_override("font_size", 72)
+	total_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+	total_lbl.text = "Итого: ≈ %.0f кр" % (price * factor)
+	info_box.add_child(total_lbl)
+
+	var qty_box := _make_qty_box(1, int(stock),
+		func(v: int): total_lbl.text = "Итого: ≈ %.0f кр" % (v * price * factor)
+	)
 	var qty_lbl: Label = qty_box.get_node("QtyLabel")
 	row.add_child(qty_box)
 
 	var btn := Button.new()
 	btn.text = "Купить"
 	btn.custom_minimum_size = Vector2(100, 0)
-	btn.add_theme_font_size_override("font_size", 22)
+	btn.add_theme_font_size_override("font_size", 88)
 	btn.pressed.connect(func(): _do_buy(resource_id, float(qty_lbl.text), weight))
 	row.add_child(btn)
 
@@ -261,17 +272,28 @@ func _make_sell_row(ship: Dictionary, cargo_item: Dictionary, market_item: Dicti
 	var price: float  = market_item.get("price", market_item.get("base_price", 0.0))
 	var in_hold: int  = int(cargo_item.get("quantity", 0))
 	var weight: float = cargo_item.get("weight_per_unit", 1.0)
+	var tax_rate: float = _market_data.get("trade_tax", 0.0)
+	var factor: float   = 1.0 - tax_rate  # продавец получает за вычетом налога
 
 	var row := _make_row_base(resource_id, name_text, price, "В трюме: %d т" % in_hold)
+	var info_box: VBoxContainer = row.get_child(1)
 
-	var qty_box := _make_qty_box(1, in_hold)
+	var total_lbl := Label.new()
+	total_lbl.add_theme_font_size_override("font_size", 72)
+	total_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 0.55))
+	total_lbl.text = "Получите: ≈ %.0f кр" % (price * factor)
+	info_box.add_child(total_lbl)
+
+	var qty_box := _make_qty_box(1, in_hold,
+		func(v: int): total_lbl.text = "Получите: ≈ %.0f кр" % (v * price * factor)
+	)
 	var qty_lbl: Label = qty_box.get_node("QtyLabel")
 	row.add_child(qty_box)
 
 	var btn := Button.new()
 	btn.text = "Продать"
 	btn.custom_minimum_size = Vector2(100, 0)
-	btn.add_theme_font_size_override("font_size", 22)
+	btn.add_theme_font_size_override("font_size", 88)
 	btn.pressed.connect(func(): _do_sell(ship, resource_id, float(qty_lbl.text), weight))
 	row.add_child(btn)
 
@@ -301,14 +323,14 @@ func _make_row_base(resource_id: int, name_text: String, price: float, detail: S
 
 	var name_lbl := Label.new()
 	name_lbl.text = name_text
-	name_lbl.add_theme_font_size_override("font_size", 24)
+	name_lbl.add_theme_font_size_override("font_size", 96)
 	name_lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
 	name_lbl.clip_text = true
 	info_box.add_child(name_lbl)
 
 	var detail_lbl := Label.new()
 	detail_lbl.text = "%.0f кр/т  •  %s" % [price, detail]
-	detail_lbl.add_theme_font_size_override("font_size", 18)
+	detail_lbl.add_theme_font_size_override("font_size", 72)
 	detail_lbl.add_theme_color_override("font_color", Color(0.5, 0.75, 0.5))
 	info_box.add_child(detail_lbl)
 
@@ -345,7 +367,7 @@ func _load_resource_icon(target: TextureRect, resource_id: int) -> void:
 	http.request(url)
 
 
-func _make_qty_box(min_val: int, max_val: int) -> HBoxContainer:
+func _make_qty_box(min_val: int, max_val: int, on_change: Callable = Callable()) -> HBoxContainer:
 	var box := HBoxContainer.new()
 	box.name = "QtyBox"
 	box.add_theme_constant_override("separation", 0)
@@ -353,7 +375,7 @@ func _make_qty_box(min_val: int, max_val: int) -> HBoxContainer:
 	var minus := Button.new()
 	minus.text                  = "−"
 	minus.custom_minimum_size   = Vector2(44, 44)
-	minus.add_theme_font_size_override("font_size", 26)
+	minus.add_theme_font_size_override("font_size", 104)
 	box.add_child(minus)
 
 	var qty_lbl := Label.new()
@@ -362,25 +384,29 @@ func _make_qty_box(min_val: int, max_val: int) -> HBoxContainer:
 	qty_lbl.custom_minimum_size  = Vector2(52, 44)
 	qty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	qty_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
-	qty_lbl.add_theme_font_size_override("font_size", 22)
+	qty_lbl.add_theme_font_size_override("font_size", 88)
 	qty_lbl.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	box.add_child(qty_lbl)
 
 	var plus := Button.new()
 	plus.text                 = "+"
 	plus.custom_minimum_size  = Vector2(44, 44)
-	plus.add_theme_font_size_override("font_size", 26)
+	plus.add_theme_font_size_override("font_size", 104)
 	box.add_child(plus)
 
 	minus.pressed.connect(func():
 		var v := int(qty_lbl.text)
 		if v > min_val:
 			qty_lbl.text = str(v - 1)
+			if on_change.is_valid():
+				on_change.call(v - 1)
 	)
 	plus.pressed.connect(func():
 		var v := int(qty_lbl.text)
 		if v < max_val:
 			qty_lbl.text = str(v + 1)
+			if on_change.is_valid():
+				on_change.call(v + 1)
 	)
 
 	return box
@@ -480,7 +506,7 @@ func _build_ui() -> void:
 
 	_title_label = Label.new()
 	_title_label.text = "🏪 Рынок"
-	_title_label.add_theme_font_size_override("font_size", 34)
+	_title_label.add_theme_font_size_override("font_size", 136)
 	_title_label.add_theme_color_override("font_color", Color(0.95, 1.0, 0.85))
 	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(_title_label)
@@ -488,14 +514,14 @@ func _build_ui() -> void:
 	var close_btn := Button.new()
 	close_btn.text = "✕"
 	close_btn.flat = true
-	close_btn.add_theme_font_size_override("font_size", 28)
+	close_btn.add_theme_font_size_override("font_size", 112)
 	close_btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	close_btn.pressed.connect(close_screen)
 	header.add_child(close_btn)
 
 	# ── Инфо о трюме ──────────────────────────────────────────────────────────
 	_cargo_label = Label.new()
-	_cargo_label.add_theme_font_size_override("font_size", 20)
+	_cargo_label.add_theme_font_size_override("font_size", 80)
 	_cargo_label.add_theme_color_override("font_color", Color(0.55, 0.75, 0.55))
 	root.add_child(_cargo_label)
 
@@ -510,7 +536,7 @@ func _build_ui() -> void:
 	_buy_tab_btn.text                   = "  КУПИТЬ  "
 	_buy_tab_btn.flat                   = false
 	_buy_tab_btn.size_flags_horizontal  = Control.SIZE_EXPAND_FILL
-	_buy_tab_btn.add_theme_font_size_override("font_size", 24)
+	_buy_tab_btn.add_theme_font_size_override("font_size", 96)
 	_buy_tab_btn.pressed.connect(func(): _switch_tab("buy"))
 	tabs.add_child(_buy_tab_btn)
 
@@ -518,7 +544,7 @@ func _build_ui() -> void:
 	_sell_tab_btn.text                  = "  ПРОДАТЬ  "
 	_sell_tab_btn.flat                  = true
 	_sell_tab_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_sell_tab_btn.add_theme_font_size_override("font_size", 24)
+	_sell_tab_btn.add_theme_font_size_override("font_size", 96)
 	_sell_tab_btn.pressed.connect(func(): _switch_tab("sell"))
 	tabs.add_child(_sell_tab_btn)
 
@@ -540,7 +566,7 @@ func _build_ui() -> void:
 	toast_style.content_margin_bottom = 10
 	_error_toast.add_theme_stylebox_override("panel", toast_style)
 	var toast_lbl := Label.new()
-	toast_lbl.add_theme_font_size_override("font_size", 22)
+	toast_lbl.add_theme_font_size_override("font_size", 88)
 	toast_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.75))
 	toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
