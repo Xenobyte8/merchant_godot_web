@@ -40,7 +40,7 @@ func get_flight_times(ship_id: int) -> Array:
 
 
 func get_planet_market(planet_id: int) -> Dictionary:
-	return await _get_request("/api/planets/%d/market" % planet_id)
+	return await _get_request("/api/planets/%d/market?telegram_id=%d" % [planet_id, Session.telegram_id])
 
 
 func trade_buy(ship_id: int, planet_id: int, resource_id: int, quantity: float) -> Dictionary:
