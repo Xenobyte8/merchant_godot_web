@@ -8,6 +8,7 @@ class_name BottomPanel
 signal ship_selected(ship: Dictionary)
 signal destination_selected(ship_id: int, planet_id: int)
 signal market_requested(planet_id: int)
+signal base_requested(planet_id: int)
 
 const SHIP_ASSETS_URL_PATH := "/assets/images/"
 const RESOURCE_ICON_URL    := "/assets/images/resources/{id}/icon.png"
@@ -90,6 +91,70 @@ func show_planet(planet_name: String, planet_id: int, planet_slug: String, ships
 	header.add_child(market_btn)
 
 	# ── Список кораблей в два столбца ───────────────────────────────────────
+	if ships.is_empty():
+		var lbl := Label.new()
+		lbl.text = "Кораблей нет"
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+		_action_list.add_child(lbl)
+	else:
+		var ships_sep := HSeparator.new()
+		ships_sep.add_theme_color_override("color", Color(0.3, 0.45, 0.7, 0.5))
+		_action_list.add_child(ships_sep)
+
+		var grid := GridContainer.new()
+		grid.columns = 2
+		grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_theme_constant_override("h_separation", 8)
+		grid.add_theme_constant_override("v_separation", 8)
+		_action_list.add_child(grid)
+		for ship in ships:
+			grid.add_child(_make_ship_btn(ship))
+	_expand()
+
+
+func show_base(planet_name: String, planet_id: int, planet_slug: String, ships: Array) -> void:
+	_fetch_seq        += 1
+	_state             = State.PLANET
+	current_ship       = {}
+	current_planet_id  = planet_id
+	_icon.texture      = null
+	if not planet_slug.is_empty():
+		var cached = Session.texture_cache.get(planet_slug)
+		if cached is ImageTexture:
+			_icon.texture = cached
+		elif OS.has_feature("web"):
+			_load_icon_http_cached(_icon, planet_slug,
+				Session.api_base + SHIP_ASSETS_URL_PATH + planet_slug + "/location_card.png")
+	_title.text        = planet_name
+	_subtitle.text     = ""
+	_extra.text        = ""
+	_bar_label.text    = "▼  " + planet_name
+	_clear_actions()
+	_clear_cargo_detail()
+
+	var header := HBoxContainer.new()
+	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_theme_constant_override("separation", 12)
+	_action_list.add_child(header)
+
+	var planet_lbl := Label.new()
+	planet_lbl.text = planet_name
+	planet_lbl.add_theme_font_size_override("font_size", 30)
+	planet_lbl.add_theme_color_override("font_color", Color(0.95, 1.0, 1.0))
+	planet_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	planet_lbl.vertical_alignment    = VERTICAL_ALIGNMENT_CENTER
+	header.add_child(planet_lbl)
+
+	var base_btn := Button.new()
+	base_btn.text                = "🚀  На базу"
+	base_btn.flat                = false
+	base_btn.custom_minimum_size = Vector2(0, 64)
+	base_btn.add_theme_font_size_override("font_size", 24)
+	base_btn.add_theme_color_override("font_color", Color(0.8, 1.0, 0.9))
+	base_btn.pressed.connect(func() -> void: base_requested.emit(planet_id))
+	header.add_child(base_btn)
+
 	if ships.is_empty():
 		var lbl := Label.new()
 		lbl.text = "Кораблей нет"

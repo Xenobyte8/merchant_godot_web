@@ -8,6 +8,7 @@ extends Node2D
 @onready var status:         StatusOverlay     = $StatusOverlay
 @onready var bottom_panel:   BottomPanel       = $BottomPanel
 @onready var city_view:      CityView          = $CityView
+@onready var base_view:      BaseView          = $BaseView
 @onready var market_screen:  MarketScreen      = $MarketScreen
 @onready var quests_inbox:   QuestsInboxScreen = $QuestsInboxScreen
 @onready var camera:         MapCamera         = $MapCamera
@@ -29,6 +30,7 @@ func _ready() -> void:
 	bottom_panel.ship_selected.connect(_on_ship_selected)
 	bottom_panel.destination_selected.connect(_on_destination_selected)
 	bottom_panel.market_requested.connect(_on_market_requested)
+	bottom_panel.base_requested.connect(_on_base_requested)
 	market_screen.closed.connect(func(): pass)
 	market_screen.trade_completed.connect(_refresh_after_trade)
 	quests_inbox.closed.connect(_on_quests_inbox_closed)
@@ -43,6 +45,9 @@ func _start() -> void:
 	var auth := await api.auth_test_user()
 	if auth.is_empty():
 		return
+
+	# Автосоздание персональной базы (идемпотентно)
+	await api.get_my_base()
 
 	status.show_status("Загрузка карты...", 0.35)
 	if not await _refresh_map():
@@ -94,16 +99,24 @@ func _start_polling() -> void:
 	add_child(timer)
 
 
-func _on_planet_tapped(planet_id: int, planet_name: String, planet_slug: String, ships: Array) -> void:
+func _on_planet_tapped(planet_id: int, planet_name: String, planet_slug: String, planet_type: String, ships: Array) -> void:
 	_planet_just_tapped    = true
 	_current_planet_id    = planet_id
 	_current_planet_name  = planet_name
 	_current_planet_slug  = planet_slug
 	_current_planet_ships = ships
+	# Своя база игрока — показываем панель с кнопкой «На базу»
+	if planet_type == "player_base":
+		bottom_panel.show_base(planet_name, planet_id, planet_slug, ships)
+		return
 	bottom_panel.show_planet(planet_name, planet_id, planet_slug, ships)
 	# Если рынок был открыт — переоткрываем для новой планеты
 	if market_screen.visible:
 		_on_market_requested(planet_id)
+
+
+func _on_base_requested(planet_id: int) -> void:
+	base_view.open(planet_id, _current_planet_name, api, _current_planet_ships)
 
 
 func _on_ship_selected(ship: Dictionary) -> void:
