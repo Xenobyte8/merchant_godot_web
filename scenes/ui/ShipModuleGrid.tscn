@@ -175,17 +175,15 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 177.14304
-offset_top = 96.000244
-offset_right = 177.14304
-offset_bottom = 76.000244
+offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
-rotation = 3.14159
 mouse_filter = 2
 texture = ExtResource("6_snac")
 expand_mode = 3
 stretch_mode = 5
+flip_h = true
+flip_v = true
 
 [node name="LabelBg" type="ColorRect" parent="port_nacelle" unique_id=1268884750]
 layout_mode = 1
@@ -613,17 +611,15 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 180.14304
-offset_top = 95.000244
-offset_right = 180.14304
-offset_bottom = 75.000244
+offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
-rotation = 3.14159
 mouse_filter = 2
 texture = ExtResource("13_sthr")
 expand_mode = 3
 stretch_mode = 5
+flip_h = true
+flip_v = true
 
 [node name="LabelBg" type="ColorRect" parent="port_thruster" unique_id=2050140807]
 layout_mode = 1
