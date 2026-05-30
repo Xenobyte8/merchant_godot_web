@@ -15,7 +15,7 @@ const COLOR_DONE        := Color(0.12, 0.62, 0.55)
 const TEXTURES: Dictionary = {
 	"bow":                 preload("res://assets/images/ship_modules/bow.png"),
 	"bridge":              preload("res://assets/images/ship_modules/bridge.png"),
-	"port_nacelle":        preload("res://assets/images/ship_modules/port_nacelle.png"),
+	"port_nacelle":        preload("res://assets/images/ship_modules/starboard_nacelle.png"),
 	"starboard_nacelle":   preload("res://assets/images/ship_modules/starboard_nacelle.png"),
 	"forward_hull":        preload("res://assets/images/ship_modules/forward_hull.png"),
 	"port_wing":           preload("res://assets/images/ship_modules/port_wing.png"),

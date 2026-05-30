@@ -5,7 +5,7 @@ class_name Galaxy
 # (планет и кораблей). Координаты — в мировых единицах, зум/пан
 # контролируются Camera2D (см. MapCamera).
 
-signal planet_tapped(planet_id: int, planet_name: String, planet_slug: String, ships: Array)
+signal planet_tapped(planet_id: int, planet_name: String, planet_slug: String, planet_type: String, ships: Array)
 
 var _planets: Dictionary = {}  # id -> Planet
 var _ships:   Dictionary = {}  # id -> Ship
@@ -110,7 +110,7 @@ func _on_planet_pressed(planet_id: int) -> void:
 	if planet == null:
 		return
 	var ships := ships_at_planet(planet_id)
-	planet_tapped.emit(planet_id, planet.planet_name, planet.slug, ships)
+	planet_tapped.emit(planet_id, planet.planet_name, planet.slug, planet.planet_type, ships)
 
 
 ## Фоновая загрузка location_card.png всех планет в Session.texture_cache.

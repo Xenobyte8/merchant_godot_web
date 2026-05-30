@@ -15,6 +15,7 @@ var map_x:     float = 50.0
 var map_y:     float = 50.0
 var slug:      String = ""
 var planet_name: String = ""
+var planet_type: String = ""
 
 var _sprite: Sprite2D
 var _label:  Label
@@ -43,6 +44,7 @@ func apply_data(d: Dictionary) -> void:
 	map_y       = _to_f(d.get("y"), 50.0)
 	slug        = _to_s(d.get("image_slug"), "")
 	planet_name = _to_s(d.get("name"), "")
+	planet_type = _to_s(d.get("planet_type"), "")
 	if is_inside_tree():
 		_refresh()
 
