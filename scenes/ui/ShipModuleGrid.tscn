@@ -1,26 +1,33 @@
-[gd_scene load_steps=12 format=3 uid="uid://cshpgrd2026a"]
+[gd_scene format=3 uid="uid://cshpgrd2026a"]
 
 [ext_resource type="Script" uid="uid://m2whmqinudcg" path="res://scripts/ui/base/ShipModuleGrid.gd" id="1_smg"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/bow.png" id="2_bow"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/bridge.png" id="3_bridge"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/forward_hull.png" id="5_fhull"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/starboard_nacelle.png" id="6_snac"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/port_wing.png" id="7_pwing"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/mid_hull.png" id="8_mhull"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/starboard_wing.png" id="9_swing"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/aft_hull.png" id="10_ahull"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/main_drive.png" id="12_mdrv"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/starboard_thruster.png" id="13_sthr"]
+[ext_resource type="Texture2D" uid="uid://s2833kd3nxpg" path="res://assets/images/ship_modules/bow.png" id="2_bow"]
+[ext_resource type="Texture2D" uid="uid://do8gewk8ncr0g" path="res://assets/images/ship_modules/bridge.png" id="3_bridge"]
+[ext_resource type="Texture2D" uid="uid://dht7plj01qr0s" path="res://assets/images/ship_modules/forward_hull.png" id="5_fhull"]
+[ext_resource type="Texture2D" uid="uid://bcwnq5poaqyxc" path="res://assets/images/ship_modules/starboard_nacelle.png" id="6_snac"]
+[ext_resource type="Texture2D" uid="uid://cxausu28p64g6" path="res://assets/images/ship_modules/port_wing.png" id="7_pwing"]
+[ext_resource type="Texture2D" uid="uid://brx0yhqjpp23j" path="res://assets/images/ship_modules/mid_hull.png" id="8_mhull"]
+[ext_resource type="Texture2D" uid="uid://c7cnwesh3b62r" path="res://assets/images/ship_modules/starboard_wing.png" id="9_swing"]
+[ext_resource type="Texture2D" uid="uid://coa4rq6lxndqg" path="res://assets/images/ship_modules/aft_hull.png" id="10_ahull"]
+[ext_resource type="Texture2D" uid="uid://cjaw1fr6q5uw4" path="res://assets/images/ship_modules/main_drive.png" id="12_mdrv"]
+[ext_resource type="Texture2D" uid="uid://crr03thdyr55v" path="res://assets/images/ship_modules/starboard_thruster.png" id="13_sthr"]
 
-[node name="ShipModuleGrid" type="Control"]
+[node name="ShipModuleGrid" type="Control" unique_id=780424924]
 layout_mode = 3
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 57.0
+offset_top = 176.0
+offset_right = 57.0
+offset_bottom = 176.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_smg")
 
-[node name="bow" type="Control" parent="."]
+[node name="bow" type="Control" parent="." unique_id=1790065784]
 layout_mode = 1
 anchor_left = 0.428571
-anchor_top = 0.0
 anchor_right = 0.571429
 anchor_bottom = 0.166667
 offset_left = 2.0
@@ -28,25 +35,33 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="bow"]
+[node name="Bg" type="ColorRect" parent="bow" unique_id=629348713]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="bow"]
+[node name="Icon" type="TextureRect" parent="bow" unique_id=1287750176]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("2_bow")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("2_bow")
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="bow"]
+[node name="LabelBg" type="ColorRect" parent="bow" unique_id=1167950355]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -54,9 +69,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="bow"]
+[node name="NameLabel" type="Label" parent="bow" unique_id=1648833286]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -64,15 +79,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Нос корабля"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="bridge" type="Control" parent="."]
+[node name="bridge" type="Control" parent="." unique_id=20879611]
 layout_mode = 1
 anchor_left = 0.428571
 anchor_top = 0.166667
@@ -83,25 +97,33 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="bridge"]
+[node name="Bg" type="ColorRect" parent="bridge" unique_id=1630022949]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="bridge"]
+[node name="Icon" type="TextureRect" parent="bridge" unique_id=632099902]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("3_bridge")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("3_bridge")
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="bridge"]
+[node name="LabelBg" type="ColorRect" parent="bridge" unique_id=422468351]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -109,9 +131,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="bridge"]
+[node name="NameLabel" type="Label" parent="bridge" unique_id=295019722]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -119,15 +141,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Командный мостик"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="port_nacelle" type="Control" parent="."]
+[node name="port_nacelle" type="Control" parent="." unique_id=252643973]
 layout_mode = 1
 anchor_left = 0.142857
 anchor_top = 0.333333
@@ -138,26 +159,37 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="port_nacelle"]
+[node name="Bg" type="ColorRect" parent="port_nacelle" unique_id=2109026958]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="port_nacelle"]
+[node name="Icon" type="TextureRect" parent="port_nacelle" unique_id=922426171]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
-offset_bottom = -20.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 177.14304
+offset_top = 96.000244
+offset_right = 177.14304
+offset_bottom = 76.000244
+grow_horizontal = 2
+grow_vertical = 2
+rotation = 3.14159
 mouse_filter = 2
+texture = ExtResource("6_snac")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("6_snac")
-rotation = 3.14159
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="port_nacelle"]
+[node name="LabelBg" type="ColorRect" parent="port_nacelle" unique_id=1268884750]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -165,9 +197,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="port_nacelle"]
+[node name="NameLabel" type="Label" parent="port_nacelle" unique_id=1457352375]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -175,15 +207,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Левая гондола"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="forward_hull" type="Control" parent="."]
+[node name="forward_hull" type="Control" parent="." unique_id=1661945826]
 layout_mode = 1
 anchor_left = 0.428571
 anchor_top = 0.333333
@@ -194,25 +225,33 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="forward_hull"]
+[node name="Bg" type="ColorRect" parent="forward_hull" unique_id=382613937]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="forward_hull"]
+[node name="Icon" type="TextureRect" parent="forward_hull" unique_id=1878559422]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("5_fhull")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("5_fhull")
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="forward_hull"]
+[node name="LabelBg" type="ColorRect" parent="forward_hull" unique_id=1124406812]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -220,9 +259,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="forward_hull"]
+[node name="NameLabel" type="Label" parent="forward_hull" unique_id=928166831]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -230,15 +269,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Передний корпус"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="starboard_nacelle" type="Control" parent="."]
+[node name="starboard_nacelle" type="Control" parent="." unique_id=245900045]
 layout_mode = 1
 anchor_left = 0.714286
 anchor_top = 0.333333
@@ -249,25 +287,33 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="starboard_nacelle"]
+[node name="Bg" type="ColorRect" parent="starboard_nacelle" unique_id=1591680253]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="starboard_nacelle"]
+[node name="Icon" type="TextureRect" parent="starboard_nacelle" unique_id=392652626]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("6_snac")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("6_snac")
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="starboard_nacelle"]
+[node name="LabelBg" type="ColorRect" parent="starboard_nacelle" unique_id=15423739]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -275,9 +321,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="starboard_nacelle"]
+[node name="NameLabel" type="Label" parent="starboard_nacelle" unique_id=281733732]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -285,15 +331,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Правая гондола"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="port_wing" type="Control" parent="."]
+[node name="port_wing" type="Control" parent="." unique_id=450835583]
 layout_mode = 1
 anchor_left = 0.285714
 anchor_top = 0.5
@@ -304,25 +349,33 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="port_wing"]
+[node name="Bg" type="ColorRect" parent="port_wing" unique_id=375435986]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="port_wing"]
+[node name="Icon" type="TextureRect" parent="port_wing" unique_id=766790092]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("7_pwing")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("7_pwing")
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="port_wing"]
+[node name="LabelBg" type="ColorRect" parent="port_wing" unique_id=552147880]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -330,9 +383,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="port_wing"]
+[node name="NameLabel" type="Label" parent="port_wing" unique_id=569274112]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -340,15 +393,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Левое крыло"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="mid_hull" type="Control" parent="."]
+[node name="mid_hull" type="Control" parent="." unique_id=2044765661]
 layout_mode = 1
 anchor_left = 0.428571
 anchor_top = 0.5
@@ -359,25 +411,33 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="mid_hull"]
+[node name="Bg" type="ColorRect" parent="mid_hull" unique_id=1922066137]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="mid_hull"]
+[node name="Icon" type="TextureRect" parent="mid_hull" unique_id=208011060]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("8_mhull")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("8_mhull")
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="mid_hull"]
+[node name="LabelBg" type="ColorRect" parent="mid_hull" unique_id=1246357974]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -385,9 +445,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="mid_hull"]
+[node name="NameLabel" type="Label" parent="mid_hull" unique_id=1282263653]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -395,15 +455,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
-text = "Средний корпус"
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Реактор"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="starboard_wing" type="Control" parent="."]
+[node name="starboard_wing" type="Control" parent="." unique_id=1059176752]
 layout_mode = 1
 anchor_left = 0.571429
 anchor_top = 0.5
@@ -414,25 +473,33 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="starboard_wing"]
+[node name="Bg" type="ColorRect" parent="starboard_wing" unique_id=975834948]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="starboard_wing"]
+[node name="Icon" type="TextureRect" parent="starboard_wing" unique_id=2014804406]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("9_swing")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("9_swing")
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="starboard_wing"]
+[node name="LabelBg" type="ColorRect" parent="starboard_wing" unique_id=1035001422]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -440,9 +507,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="starboard_wing"]
+[node name="NameLabel" type="Label" parent="starboard_wing" unique_id=521821566]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -450,15 +517,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Правое крыло"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="aft_hull" type="Control" parent="."]
+[node name="aft_hull" type="Control" parent="." unique_id=1631008365]
 layout_mode = 1
 anchor_left = 0.428571
 anchor_top = 0.666667
@@ -469,25 +535,33 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="aft_hull"]
+[node name="Bg" type="ColorRect" parent="aft_hull" unique_id=2141118033]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="aft_hull"]
+[node name="Icon" type="TextureRect" parent="aft_hull" unique_id=1276463768]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("10_ahull")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("10_ahull")
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="aft_hull"]
+[node name="LabelBg" type="ColorRect" parent="aft_hull" unique_id=1266869280]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -495,9 +569,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="aft_hull"]
+[node name="NameLabel" type="Label" parent="aft_hull" unique_id=1947310249]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -505,15 +579,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Кормовой корпус"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="port_thruster" type="Control" parent="."]
+[node name="port_thruster" type="Control" parent="." unique_id=1611074758]
 layout_mode = 1
 anchor_left = 0.142857
 anchor_top = 0.833333
@@ -524,26 +597,37 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="port_thruster"]
+[node name="Bg" type="ColorRect" parent="port_thruster" unique_id=1367004529]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="port_thruster"]
+[node name="Icon" type="TextureRect" parent="port_thruster" unique_id=1183674473]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
-offset_bottom = -20.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 180.14304
+offset_top = 95.000244
+offset_right = 180.14304
+offset_bottom = 75.000244
+grow_horizontal = 2
+grow_vertical = 2
+rotation = 3.14159
 mouse_filter = 2
+texture = ExtResource("13_sthr")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("13_sthr")
-rotation = 3.14159
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="port_thruster"]
+[node name="LabelBg" type="ColorRect" parent="port_thruster" unique_id=2050140807]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -551,9 +635,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="port_thruster"]
+[node name="NameLabel" type="Label" parent="port_thruster" unique_id=1326251085]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -561,15 +645,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Левый ускоритель"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="main_drive" type="Control" parent="."]
+[node name="main_drive" type="Control" parent="." unique_id=65019678]
 layout_mode = 1
 anchor_left = 0.428571
 anchor_top = 0.833333
@@ -580,25 +663,33 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="main_drive"]
+[node name="Bg" type="ColorRect" parent="main_drive" unique_id=483368394]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="main_drive"]
+[node name="Icon" type="TextureRect" parent="main_drive" unique_id=1258833979]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("12_mdrv")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("12_mdrv")
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="main_drive"]
+[node name="LabelBg" type="ColorRect" parent="main_drive" unique_id=1606432029]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -606,9 +697,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="main_drive"]
+[node name="NameLabel" type="Label" parent="main_drive" unique_id=466450451]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -616,15 +707,14 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Главный двигатель"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
-[node name="starboard_thruster" type="Control" parent="."]
+[node name="starboard_thruster" type="Control" parent="." unique_id=473395248]
 layout_mode = 1
 anchor_left = 0.714286
 anchor_top = 0.833333
@@ -635,25 +725,33 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
-[node name="Bg" type="ColorRect" parent="starboard_thruster"]
+[node name="Bg" type="ColorRect" parent="starboard_thruster" unique_id=699010965]
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.15, 0.18, 0.32, 1)
 
-[node name="Icon" type="TextureRect" parent="starboard_thruster"]
+[node name="Icon" type="TextureRect" parent="starboard_thruster" unique_id=188218230]
+modulate = Color(0.35, 0.4, 0.6, 1)
 layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("13_sthr")
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("13_sthr")
-modulate = Color(0.35, 0.4, 0.6, 1)
 
-[node name="LabelBg" type="ColorRect" parent="starboard_thruster"]
+[node name="LabelBg" type="ColorRect" parent="starboard_thruster" unique_id=2067492021]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -661,9 +759,9 @@ offset_top = -24.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="NameLabel" type="Label" parent="starboard_thruster"]
+[node name="NameLabel" type="Label" parent="starboard_thruster" unique_id=772199063]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -671,10 +769,9 @@ offset_left = 2.0
 offset_top = -22.0
 offset_right = -2.0
 offset_bottom = -2.0
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "Правый ускоритель"
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
