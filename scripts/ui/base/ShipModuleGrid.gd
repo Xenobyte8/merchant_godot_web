@@ -12,6 +12,21 @@ const COLOR_NOT_STARTED := Color(0.15, 0.18, 0.32)
 const COLOR_IN_PROGRESS := Color(0.75, 0.55, 0.08)
 const COLOR_DONE        := Color(0.12, 0.62, 0.55)
 
+const TEXTURES: Dictionary = {
+	"bow":                 preload("res://assets/images/ship_modules/bow.png"),
+	"bridge":              preload("res://assets/images/ship_modules/bridge.png"),
+	"port_nacelle":        preload("res://assets/images/ship_modules/port_nacelle.png"),
+	"starboard_nacelle":   preload("res://assets/images/ship_modules/starboard_nacelle.png"),
+	"forward_hull":        preload("res://assets/images/ship_modules/forward_hull.png"),
+	"port_wing":           preload("res://assets/images/ship_modules/port_wing.png"),
+	"starboard_wing":      preload("res://assets/images/ship_modules/starboard_wing.png"),
+	"mid_hull":            preload("res://assets/images/ship_modules/mid_hull.png"),
+	"aft_hull":            preload("res://assets/images/ship_modules/aft_hull.png"),
+	"port_thruster":       preload("res://assets/images/ship_modules/port_thruster.png"),
+	"starboard_thruster":  preload("res://assets/images/ship_modules/starboard_thruster.png"),
+	"main_drive":          preload("res://assets/images/ship_modules/main_drive.png"),
+}
+
 var _modules_by_slug: Dictionary = {}   # slug → Dictionary (данные модуля)
 
 
@@ -139,9 +154,10 @@ func _update_all() -> void:
 		if m.is_empty():
 			continue
 		_update_module_node(child as Control, m)
-		var url: String = str(m.get("image_url", ""))
-		if not url.is_empty():
-			_load_icon(child as Control, url)
+		# Текстура из bundled ресурсов
+		var icon: TextureRect = (child as Control).get_node_or_null("Icon")
+		if icon and TEXTURES.has(slug):
+			icon.texture = TEXTURES[slug]
 
 
 func _update_module_node(node: Control, m: Dictionary) -> void:
@@ -182,23 +198,6 @@ func _update_module_node(node: Control, m: Dictionary) -> void:
 		done_lbl.visible = is_done
 
 
-func _load_icon(node: Control, rel_url: String) -> void:
-	var icon: TextureRect = node.get_node_or_null("Icon")
-	if icon == null:
-		return
-	var http := HTTPRequest.new()
-	add_child(http)
-	http.request(Session.api_base + rel_url)
-	var result: Array = await http.request_completed
-	http.queue_free()
-	if result[0] != HTTPRequest.RESULT_SUCCESS or result[1] != 200:
-		return
-	var img := Image.new()
-	if img.load_png_from_buffer(result[3]) != OK:
-		return
-	icon.texture = ImageTexture.create_from_image(img)
-
-
 # ── Ввод ─────────────────────────────────────────────────────────────────────
 
 func _on_module_input(slug: String, ev: InputEvent) -> void:
@@ -206,4 +205,3 @@ func _on_module_input(slug: String, ev: InputEvent) -> void:
 		var m: Dictionary = _modules_by_slug.get(slug, {})
 		if not m.is_empty():
 			module_tapped.emit(m)
-
