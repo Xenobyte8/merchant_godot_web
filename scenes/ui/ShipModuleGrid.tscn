@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://cshpgrd2026a"]
+[gd_scene load_steps=12 format=3 uid="uid://cshpgrd2026a"]
 
 [ext_resource type="Script" uid="uid://m2whmqinudcg" path="res://scripts/ui/base/ShipModuleGrid.gd" id="1_smg"]
 [ext_resource type="Texture2D" path="res://assets/images/ship_modules/bow.png" id="2_bow"]
@@ -9,7 +9,6 @@
 [ext_resource type="Texture2D" path="res://assets/images/ship_modules/mid_hull.png" id="8_mhull"]
 [ext_resource type="Texture2D" path="res://assets/images/ship_modules/starboard_wing.png" id="9_swing"]
 [ext_resource type="Texture2D" path="res://assets/images/ship_modules/aft_hull.png" id="10_ahull"]
-[ext_resource type="Texture2D" path="res://assets/images/ship_modules/port_thruster.png" id="11_pthr"]
 [ext_resource type="Texture2D" path="res://assets/images/ship_modules/main_drive.png" id="12_mdrv"]
 [ext_resource type="Texture2D" path="res://assets/images/ship_modules/starboard_thruster.png" id="13_sthr"]
 
@@ -538,7 +537,8 @@ offset_bottom = -20.0
 mouse_filter = 2
 expand_mode = 3
 stretch_mode = 5
-texture = ExtResource("11_pthr")
+texture = ExtResource("13_sthr")
+rotation = 3.14159
 modulate = Color(0.35, 0.4, 0.6, 1)
 
 [node name="LabelBg" type="ColorRect" parent="port_thruster"]

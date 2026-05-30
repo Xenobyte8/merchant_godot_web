@@ -22,7 +22,7 @@ const TEXTURES: Dictionary = {
 	"starboard_wing":      preload("res://assets/images/ship_modules/starboard_wing.png"),
 	"mid_hull":            preload("res://assets/images/ship_modules/mid_hull.png"),
 	"aft_hull":            preload("res://assets/images/ship_modules/aft_hull.png"),
-	"port_thruster":       preload("res://assets/images/ship_modules/port_thruster.png"),
+	"port_thruster":       preload("res://assets/images/ship_modules/starboard_thruster.png"),
 	"starboard_thruster":  preload("res://assets/images/ship_modules/starboard_thruster.png"),
 	"main_drive":          preload("res://assets/images/ship_modules/main_drive.png"),
 }
