@@ -1,6 +1,18 @@
-[gd_scene load_steps=2 format=3 uid="uid://cshpgrd2026a"]
+[gd_scene load_steps=14 format=3 uid="uid://cshpgrd2026a"]
 
 [ext_resource type="Script" uid="uid://m2whmqinudcg" path="res://scripts/ui/base/ShipModuleGrid.gd" id="1_smg"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/bow.png" id="2_bow"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/bridge.png" id="3_bridge"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/port_nacelle.png" id="4_pnac"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/forward_hull.png" id="5_fhull"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/starboard_nacelle.png" id="6_snac"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/port_wing.png" id="7_pwing"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/mid_hull.png" id="8_mhull"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/starboard_wing.png" id="9_swing"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/aft_hull.png" id="10_ahull"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/port_thruster.png" id="11_pthr"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/main_drive.png" id="12_mdrv"]
+[ext_resource type="Texture2D" path="res://assets/images/ship_modules/starboard_thruster.png" id="13_sthr"]
 
 [node name="ShipModuleGrid" type="Control"]
 layout_mode = 3
@@ -18,6 +30,50 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
+[node name="Bg" type="ColorRect" parent="bow"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="bow"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("2_bow")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="bow"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="bow"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Нос корабля"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+
 [node name="bridge" type="Control" parent="."]
 layout_mode = 1
 anchor_left = 0.428571
@@ -28,6 +84,50 @@ offset_left = 2.0
 offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
+
+[node name="Bg" type="ColorRect" parent="bridge"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="bridge"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("3_bridge")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="bridge"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="bridge"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Командный мостик"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
 [node name="port_nacelle" type="Control" parent="."]
 layout_mode = 1
@@ -40,6 +140,50 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
+[node name="Bg" type="ColorRect" parent="port_nacelle"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="port_nacelle"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("4_pnac")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="port_nacelle"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="port_nacelle"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Левая гондола"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+
 [node name="forward_hull" type="Control" parent="."]
 layout_mode = 1
 anchor_left = 0.428571
@@ -50,6 +194,50 @@ offset_left = 2.0
 offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
+
+[node name="Bg" type="ColorRect" parent="forward_hull"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="forward_hull"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("5_fhull")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="forward_hull"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="forward_hull"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Передний корпус"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
 [node name="starboard_nacelle" type="Control" parent="."]
 layout_mode = 1
@@ -62,6 +250,50 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
+[node name="Bg" type="ColorRect" parent="starboard_nacelle"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="starboard_nacelle"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("6_snac")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="starboard_nacelle"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="starboard_nacelle"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Правая гондола"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+
 [node name="port_wing" type="Control" parent="."]
 layout_mode = 1
 anchor_left = 0.285714
@@ -72,6 +304,50 @@ offset_left = 2.0
 offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
+
+[node name="Bg" type="ColorRect" parent="port_wing"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="port_wing"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("7_pwing")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="port_wing"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="port_wing"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Левое крыло"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
 [node name="mid_hull" type="Control" parent="."]
 layout_mode = 1
@@ -84,6 +360,50 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
+[node name="Bg" type="ColorRect" parent="mid_hull"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="mid_hull"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("8_mhull")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="mid_hull"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="mid_hull"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Средний корпус"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+
 [node name="starboard_wing" type="Control" parent="."]
 layout_mode = 1
 anchor_left = 0.571429
@@ -94,6 +414,50 @@ offset_left = 2.0
 offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
+
+[node name="Bg" type="ColorRect" parent="starboard_wing"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="starboard_wing"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("9_swing")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="starboard_wing"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="starboard_wing"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Правое крыло"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
 [node name="aft_hull" type="Control" parent="."]
 layout_mode = 1
@@ -106,6 +470,50 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
+[node name="Bg" type="ColorRect" parent="aft_hull"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="aft_hull"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("10_ahull")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="aft_hull"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="aft_hull"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Кормовой корпус"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+
 [node name="port_thruster" type="Control" parent="."]
 layout_mode = 1
 anchor_left = 0.142857
@@ -116,6 +524,50 @@ offset_left = 2.0
 offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
+
+[node name="Bg" type="ColorRect" parent="port_thruster"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="port_thruster"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("11_pthr")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="port_thruster"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="port_thruster"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Левый ускоритель"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 
 [node name="main_drive" type="Control" parent="."]
 layout_mode = 1
@@ -128,6 +580,50 @@ offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
 
+[node name="Bg" type="ColorRect" parent="main_drive"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="main_drive"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("12_mdrv")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="main_drive"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="main_drive"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Главный двигатель"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+
 [node name="starboard_thruster" type="Control" parent="."]
 layout_mode = 1
 anchor_left = 0.714286
@@ -138,3 +634,47 @@ offset_left = 2.0
 offset_top = 2.0
 offset_right = -2.0
 offset_bottom = -2.0
+
+[node name="Bg" type="ColorRect" parent="starboard_thruster"]
+layout_mode = 1
+anchors_preset = 15
+mouse_filter = 2
+color = Color(0.15, 0.18, 0.32, 1)
+
+[node name="Icon" type="TextureRect" parent="starboard_thruster"]
+layout_mode = 1
+anchors_preset = 15
+offset_bottom = -20.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+texture = ExtResource("13_sthr")
+modulate = Color(0.35, 0.4, 0.6, 1)
+
+[node name="LabelBg" type="ColorRect" parent="starboard_thruster"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="NameLabel" type="Label" parent="starboard_thruster"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -22.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+text = "Правый ускоритель"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
