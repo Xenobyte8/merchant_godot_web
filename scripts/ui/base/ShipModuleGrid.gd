@@ -1,198 +1,194 @@
 extends Control
 class_name ShipModuleGrid
 
-# Отображает схему корабля в виде сетки модулей.
-# Каждый модуль — ячейка с изображением, закрашенная по прогрессу.
+# Отображает схему корабля (Нормандия) через дочерние Control-узлы сцены.
+# Каждый узел называется по slug модуля (bow, bridge, …).
+# Позиции модулей задаются в редакторе сцены scenes/ui/ShipModuleGrid.tscn.
 
 signal module_tapped(module: Dictionary)
 
-# ── Цвета по прогрессу ───────────────────────────────────────────────────────
-const COLOR_NOT_STARTED := Color(0.1, 0.12, 0.22)      # тёмно-синий
-const COLOR_IN_PROGRESS := Color(0.55, 0.38, 0.05)     # янтарный
-const COLOR_DONE        := Color(0.08, 0.38, 0.35)     # тёмный тил
-const COLOR_FILL_NOT_STARTED := Color(0.15, 0.18, 0.32)
-const COLOR_FILL_IN_PROGRESS := Color(0.75, 0.55, 0.08)
-const COLOR_FILL_DONE        := Color(0.12, 0.62, 0.55)
-const COLOR_BORDER      := Color(0.3, 0.5, 0.8, 0.7)
-const COLOR_HOVER       := Color(1.0, 1.0, 1.0, 0.18)
+# ── Цвета ────────────────────────────────────────────────────────────────────
+const COLOR_NOT_STARTED := Color(0.15, 0.18, 0.32)
+const COLOR_IN_PROGRESS := Color(0.75, 0.55, 0.08)
+const COLOR_DONE        := Color(0.12, 0.62, 0.55)
 
-# ── Сетка: 7 колонок × 6 строк ──────────────────────────────────────────────
-const GRID_COLS := 7
-const GRID_ROWS := 6
-const CELL_PAD  := 4
+var _modules_by_slug: Dictionary = {}   # slug → Dictionary (данные модуля)
 
-var _modules:     Array = []           # Array[Dictionary] from API
-var _cell_size:   float = 64.0
-var _origin:      Vector2 = Vector2.ZERO
-var _hover_cell:  Vector2i = Vector2i(-1, -1)
-var _sprite_cache: Dictionary = {}     # url → ImageTexture|null
+
+func _ready() -> void:
+	for child in get_children():
+		if child is Control:
+			_setup_module_node(child as Control)
+
+
+# ── Публичный API ────────────────────────────────────────────────────────────
 
 func set_modules(modules: Array) -> void:
-	_modules = modules
-	queue_redraw()
-	# Start loading images for any module that has an image_url
-	for m in _modules:
+	_modules_by_slug.clear()
+	for m in modules:
+		_modules_by_slug[str(m.get("slug", ""))] = m
+	_update_all()
+
+
+# ── Построение визуальных узлов ──────────────────────────────────────────────
+
+func _setup_module_node(node: Control) -> void:
+	node.clip_contents = true
+	node.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	# Фон
+	var bg := ColorRect.new()
+	bg.name = "Bg"
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.color = COLOR_NOT_STARTED
+	node.add_child(bg)
+
+	# Иконка модуля
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	icon.offset_bottom = -20.0
+	icon.modulate = Color(0.4, 0.45, 0.65)
+	node.add_child(icon)
+
+	# Тёмная подложка под метку
+	var lbl_bg := ColorRect.new()
+	lbl_bg.name = "LabelBg"
+	lbl_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lbl_bg.color = Color(0.0, 0.0, 0.0, 0.45)
+	lbl_bg.set_anchor(SIDE_LEFT, 0.0)
+	lbl_bg.set_anchor(SIDE_RIGHT, 1.0)
+	lbl_bg.set_anchor(SIDE_TOP, 1.0)
+	lbl_bg.set_anchor(SIDE_BOTTOM, 1.0)
+	lbl_bg.offset_top = -24.0
+	lbl_bg.offset_bottom = 0.0
+	node.add_child(lbl_bg)
+
+	# Метка — название модуля
+	var lbl := Label.new()
+	lbl.name = "NameLabel"
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lbl.set_anchor(SIDE_LEFT, 0.0)
+	lbl.set_anchor(SIDE_RIGHT, 1.0)
+	lbl.set_anchor(SIDE_TOP, 1.0)
+	lbl.set_anchor(SIDE_BOTTOM, 1.0)
+	lbl.offset_top = -22.0
+	lbl.offset_bottom = -2.0
+	lbl.offset_left = 2.0
+	lbl.offset_right = -2.0
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	lbl.autowrap_mode        = TextServer.AUTOWRAP_OFF
+	lbl.clip_text            = true
+	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
+	node.add_child(lbl)
+
+	# Полоска прогресса (снизу)
+	var bar := ProgressBar.new()
+	bar.name = "Bar"
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.min_value = 0.0
+	bar.max_value = 100.0
+	bar.value = 0.0
+	bar.show_percentage = false
+	bar.set_anchor(SIDE_LEFT, 0.0)
+	bar.set_anchor(SIDE_RIGHT, 1.0)
+	bar.set_anchor(SIDE_TOP, 1.0)
+	bar.set_anchor(SIDE_BOTTOM, 1.0)
+	bar.offset_top = -8.0
+	bar.offset_bottom = 0.0
+	bar.visible = false
+	node.add_child(bar)
+
+	# Галочка «готово»
+	var done_lbl := Label.new()
+	done_lbl.name = "DoneLabel"
+	done_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	done_lbl.text = "✓"
+	done_lbl.set_anchor(SIDE_LEFT, 1.0)
+	done_lbl.set_anchor(SIDE_RIGHT, 1.0)
+	done_lbl.set_anchor(SIDE_TOP, 0.0)
+	done_lbl.set_anchor(SIDE_BOTTOM, 0.0)
+	done_lbl.offset_left = -30.0
+	done_lbl.offset_right = -4.0
+	done_lbl.offset_top = 2.0
+	done_lbl.offset_bottom = 28.0
+	done_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	done_lbl.add_theme_font_size_override("font_size", 22)
+	done_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.85))
+	done_lbl.visible = false
+	node.add_child(done_lbl)
+
+	# Обработка кликов
+	node.gui_input.connect(func(ev: InputEvent) -> void: _on_module_input(node.name, ev))
+
+
+# ── Обновление состояния ─────────────────────────────────────────────────────
+
+func _update_all() -> void:
+	for child in get_children():
+		if not (child is Control):
+			continue
+		var slug := str(child.name)
+		var m: Dictionary = _modules_by_slug.get(slug, {})
+		if m.is_empty():
+			continue
+		_update_module_node(child as Control, m)
 		var url: String = str(m.get("image_url", ""))
-		if not url.is_empty() and not _sprite_cache.has(url):
-			_sprite_cache[url] = null   # mark as loading
-			_fetch_sprite(url)
+		if not url.is_empty():
+			_load_icon(child as Control, url)
 
 
-func _draw() -> void:
-	if _modules.is_empty():
-		return
-
-	var avail := size
-	_cell_size = clamp(
-		min(avail.x / float(GRID_COLS), avail.y / float(GRID_ROWS)),
-		32.0, 120.0
-	)
-	var total_w := _cell_size * GRID_COLS
-	var total_h := _cell_size * GRID_ROWS
-	_origin = Vector2((avail.x - total_w) * 0.5, (avail.y - total_h) * 0.5)
-
-	# Build lookup by (col, row)
-	var by_pos: Dictionary = {}
-	for m in _modules:
-		var key := Vector2i(int(m.get("grid_col", 0)), int(m.get("grid_row", 0)))
-		by_pos[key] = m
-
-	for row in GRID_ROWS:
-		for col in GRID_COLS:
-			var key := Vector2i(col, row)
-			var m = by_pos.get(key, null)
-			if m == null:
-				continue   # empty cell — skip
-			_draw_module_cell(col, row, m)
-
-
-func _draw_module_cell(col: int, row: int, m: Dictionary) -> void:
-	var pct: float = float(m.get("progress_pct", 0.0))
+func _update_module_node(node: Control, m: Dictionary) -> void:
+	var pct: float    = float(m.get("progress_pct", 0.0))
 	var is_done: bool = bool(m.get("is_done", false))
 
-	var rect := _cell_rect(col, row)
-	var inner := rect.grow(-CELL_PAD)
-
-	# Background fill
-	var fill_color: Color
-	var border_color: Color
+	var bg_color: Color
+	var icon_tint: Color
 	if is_done:
-		fill_color   = COLOR_FILL_DONE
-		border_color = Color(0.2, 0.9, 0.8)
+		bg_color  = COLOR_DONE
+		icon_tint = Color(0.7, 1.0, 0.95)
 	elif pct > 0:
-		fill_color   = COLOR_FILL_IN_PROGRESS
-		border_color = Color(1.0, 0.75, 0.1)
+		bg_color  = COLOR_IN_PROGRESS
+		icon_tint = Color(1.0, 0.85, 0.35)
 	else:
-		fill_color   = COLOR_FILL_NOT_STARTED
-		border_color = COLOR_BORDER
+		bg_color  = COLOR_NOT_STARTED
+		icon_tint = Color(0.35, 0.4, 0.6)
 
-	draw_rect(inner, fill_color, true, -1.0)
+	var bg: ColorRect = node.get_node_or_null("Bg")
+	if bg:
+		bg.color = bg_color
 
-	# Texture sprite (tinted by state)
-	var url: String = str(m.get("image_url", ""))
-	var tex = _sprite_cache.get(url, null) as ImageTexture
-	if tex != null:
-		var img_color := Color.WHITE
-		if is_done:
-			img_color = Color(0.7, 1.0, 0.95)
-		elif pct > 0:
-			img_color = Color(1.0, 0.85, 0.35)
-		else:
-			img_color = Color(0.3, 0.35, 0.55)
-		draw_texture_rect(tex, inner, false, img_color)
+	var icon: TextureRect = node.get_node_or_null("Icon")
+	if icon:
+		icon.modulate = icon_tint
 
-	# Progress bar at bottom (if in progress)
-	if pct > 0 and not is_done:
-		var bar_h := 5.0
-		var bar_bg := Rect2(inner.position + Vector2(0, inner.size.y - bar_h), Vector2(inner.size.x, bar_h))
-		draw_rect(bar_bg, Color(0.1, 0.1, 0.1, 0.7), true, -1.0)
-		var bar_fg := Rect2(bar_bg.position, Vector2(bar_bg.size.x * pct / 100.0, bar_h))
-		draw_rect(bar_fg, Color(1.0, 0.7, 0.0), true, -1.0)
+	var lbl: Label = node.get_node_or_null("NameLabel")
+	if lbl:
+		lbl.text = str(m.get("name", str(node.name)))
 
-	# Border
-	draw_rect(inner, border_color, false, 1.5)
+	var bar: ProgressBar = node.get_node_or_null("Bar")
+	if bar:
+		bar.value   = pct
+		bar.visible = pct > 0 and not is_done
 
-	# Hover highlight
-	if _hover_cell == Vector2i(col, row):
-		draw_rect(inner, COLOR_HOVER, true, -1.0)
-		draw_rect(inner, Color(1.0, 1.0, 1.0, 0.6), false, 2.0)
-
-	# Module name (small text at bottom)
-	var fs: int = clamp(int(_cell_size * 0.14), 9, 18)
-	var mod_name := str(m.get("name", ""))
-	# Draw a small translucent label strip
-	var name_rect := Rect2(inner.position + Vector2(0, inner.size.y - fs - 6),
-						   Vector2(inner.size.x, fs + 6))
-	draw_rect(name_rect, Color(0.0, 0.0, 0.0, 0.55), true, -1.0)
-	draw_string(
-		ThemeDB.fallback_font,
-		inner.position + Vector2(4, inner.size.y - 4),
-		mod_name,
-		HORIZONTAL_ALIGNMENT_LEFT,
-		inner.size.x - 8,
-		fs,
-		Color(0.9, 0.95, 1.0)
-	)
-
-	# Done checkmark
-	if is_done:
-		var cs: int = clamp(int(_cell_size * 0.3), 14, 36)
-		draw_string(
-			ThemeDB.fallback_font,
-			inner.position + Vector2(inner.size.x - cs - 2, cs + 2),
-			"✓",
-			HORIZONTAL_ALIGNMENT_LEFT,
-			cs + 4,
-			cs,
-			Color(0.2, 1.0, 0.8)
-		)
+	var done_lbl: Label = node.get_node_or_null("DoneLabel")
+	if done_lbl:
+		done_lbl.visible = is_done
 
 
-func _cell_rect(col: int, row: int) -> Rect2:
-	return Rect2(
-		_origin + Vector2(col * _cell_size, row * _cell_size),
-		Vector2(_cell_size, _cell_size)
-	)
-
-
-func _cell_at(pos: Vector2) -> Vector2i:
-	var rel := pos - _origin
-	var col := int(rel.x / _cell_size)
-	var row := int(rel.y / _cell_size)
-	if col < 0 or col >= GRID_COLS or row < 0 or row >= GRID_ROWS:
-		return Vector2i(-1, -1)
-	return Vector2i(col, row)
-
-
-func _module_at(col: int, row: int):
-	for m in _modules:
-		if int(m.get("grid_col", -1)) == col and int(m.get("grid_row", -1)) == row:
-			return m
-	return null
-
-
-func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
-		var cell := _cell_at(event.position)
-		var mod = _module_at(cell.x, cell.y) if cell != Vector2i(-1, -1) else null
-		var new_hover := cell if mod != null else Vector2i(-1, -1)
-		if new_hover != _hover_cell:
-			_hover_cell = new_hover
-			queue_redraw()
-	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var cell := _cell_at(event.position)
-		if cell == Vector2i(-1, -1):
-			return
-		var mod = _module_at(cell.x, cell.y)
-		if mod != null:
-			module_tapped.emit(mod)
-
-
-func _fetch_sprite(rel_url: String) -> void:
+func _load_icon(node: Control, rel_url: String) -> void:
+	var icon: TextureRect = node.get_node_or_null("Icon")
+	if icon == null:
+		return
 	var http := HTTPRequest.new()
 	add_child(http)
-	var full_url := Session.api_base + rel_url
-	http.request(full_url)
+	http.request(Session.api_base + rel_url)
 	var result: Array = await http.request_completed
 	http.queue_free()
 	if result[0] != HTTPRequest.RESULT_SUCCESS or result[1] != 200:
@@ -200,6 +196,14 @@ func _fetch_sprite(rel_url: String) -> void:
 	var img := Image.new()
 	if img.load_png_from_buffer(result[3]) != OK:
 		return
-	var tex := ImageTexture.create_from_image(img)
-	_sprite_cache[rel_url] = tex
-	queue_redraw()
+	icon.texture = ImageTexture.create_from_image(img)
+
+
+# ── Ввод ─────────────────────────────────────────────────────────────────────
+
+func _on_module_input(slug: String, ev: InputEvent) -> void:
+	if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+		var m: Dictionary = _modules_by_slug.get(slug, {})
+		if not m.is_empty():
+			module_tapped.emit(m)
+

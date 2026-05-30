@@ -19,6 +19,8 @@ var _busy:            bool   = false
 # ── Данные проекта ───────────────────────────────────────────────────────────
 var _ship_project: Dictionary = {}   # полный ответ от /api/ship_project/status
 
+const _SHIP_GRID_SCENE = preload("res://scenes/ui/ShipModuleGrid.tscn")
+
 # ── UI узлы ──────────────────────────────────────────────────────────────────
 var _title_label:       Label
 var _progress_label:    Label
@@ -103,7 +105,7 @@ func _build_ui() -> void:
 	root.add_child(_msg_label)
 
 	# ── Схема корабля ─────────────────────────────────────────────────────────
-	_ship_grid = ShipModuleGrid.new()
+	_ship_grid = _SHIP_GRID_SCENE.instantiate() as ShipModuleGrid
 	_ship_grid.size_flags_vertical   = Control.SIZE_EXPAND_FILL
 	_ship_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_ship_grid.mouse_filter = Control.MOUSE_FILTER_STOP
