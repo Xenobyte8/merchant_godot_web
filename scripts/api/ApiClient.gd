@@ -63,6 +63,68 @@ func trade_sell(ship_id: int, planet_id: int, resource_id: int, quantity: float)
 	})
 
 
+# ── База игрока ──────────────────────────────────────────────────────────────
+
+func get_my_base() -> Dictionary:
+	return await _post("/api/base/my-planet", {"telegram_id": Session.telegram_id})
+
+
+func get_base_buildings(planet_id: int) -> Dictionary:
+	return await _post("/api/base/buildings", {
+		"telegram_id": Session.telegram_id,
+		"planet_id":   planet_id,
+	})
+
+
+func get_base_storage(planet_id: int) -> Dictionary:
+	return await _post("/api/base/storage", {
+		"telegram_id": Session.telegram_id,
+		"planet_id":   planet_id,
+	})
+
+
+func get_base_building_types() -> Array:
+	return await _post_array("/api/base/building-types", {
+		"telegram_id": Session.telegram_id,
+	})
+
+
+func base_build(planet_id: int, building_type_id: int, grid_x: int, grid_y: int) -> Dictionary:
+	return await _post("/api/base/build", {
+		"telegram_id":      Session.telegram_id,
+		"planet_id":        planet_id,
+		"building_type_id": building_type_id,
+		"grid_x":           grid_x,
+		"grid_y":           grid_y,
+	})
+
+
+func base_storage_load_from_ship(planet_id: int, ship_id: int, resource_id: int, quantity: float) -> Dictionary:
+	return await _post("/api/base/storage/load-from-ship", {
+		"telegram_id": Session.telegram_id,
+		"planet_id":   planet_id,
+		"ship_id":     ship_id,
+		"resource_id": resource_id,
+		"quantity":    quantity,
+	})
+
+
+func base_storage_transfer_to_ship(planet_id: int, ship_id: int, resource_id: int, quantity: float) -> Dictionary:
+	return await _post("/api/base/storage/transfer", {
+		"telegram_id": Session.telegram_id,
+		"planet_id":   planet_id,
+		"ship_id":     ship_id,
+		"resource_id": resource_id,
+		"quantity":    quantity,
+	})
+
+
+func get_ship_project() -> Dictionary:
+	return await _post("/api/ship_project/status", {
+		"telegram_id": Session.telegram_id,
+	})
+
+
 # ── internals ────────────────────────────────────────────────────────────────
 
 func _post(path: String, body: Dictionary) -> Dictionary:
