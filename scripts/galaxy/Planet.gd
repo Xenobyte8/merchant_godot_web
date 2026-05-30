@@ -7,7 +7,7 @@ class_name Planet
 signal pressed(planet_id: int)
 signal texture_ready
 
-const SIZE := 320.0
+const SIZE := 640.0
 const ASSETS_URL_PATH := "/assets/images/"
 
 var planet_id: int   = 0
@@ -28,11 +28,11 @@ func _ready() -> void:
 	add_child(_sprite)
 
 	_label = Label.new()
-	_label.add_theme_font_size_override("font_size", 33)
+	_label.add_theme_font_size_override("font_size", 66)
 	_label.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0))
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label.custom_minimum_size  = Vector2(200.0, 0.0)
-	_label.position             = Vector2(-100.0, SIZE * 0.5 + 4.0)
+	_label.custom_minimum_size  = Vector2(400.0, 0.0)
+	_label.position             = Vector2(-200.0, SIZE * 0.5 + 4.0)
 	add_child(_label)
 
 	_refresh()

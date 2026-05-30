@@ -125,6 +125,14 @@ func get_ship_project() -> Dictionary:
 	})
 
 
+func build_ship_module(planet_id: int, module_slug: String) -> Dictionary:
+	return await _post("/api/ship_project/build_module", {
+		"telegram_id": Session.telegram_id,
+		"planet_id":   planet_id,
+		"module_slug": module_slug,
+	})
+
+
 # ── internals ────────────────────────────────────────────────────────────────
 
 func _post(path: String, body: Dictionary) -> Dictionary:

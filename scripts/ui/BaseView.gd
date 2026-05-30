@@ -212,7 +212,8 @@ func _refresh_all() -> void:
 
 	if not s.has("_error"):
 		_storage          = s.get("items", [])
-		_storage_capacity = float(s.get("capacity", 0.0))
+		var cap = s.get("capacity", null)
+		_storage_capacity = float(cap) if cap != null else 0.0
 		_storage_used     = float(s.get("used", 0.0))
 
 	_redraw()
@@ -229,7 +230,10 @@ func _redraw() -> void:
 	_ship_grid.set_modules(modules)
 
 	# ── Склад ────────────────────────────────────────────────────────────────
-	_storage_header.text = "📦 Склад · %.1f / %.1f т" % [_storage_used, _storage_capacity]
+	if _storage_capacity > 0:
+		_storage_header.text = "📦 Склад · %.1f / %.1f т" % [_storage_used, _storage_capacity]
+	else:
+		_storage_header.text = "📦 Склад · %.1f т  (∞)" % _storage_used
 
 	for child in _storage_list.get_children():
 		child.queue_free()
@@ -262,20 +266,23 @@ func _show_module_info(m: Dictionary) -> void:
 	if col == null:
 		return
 
-	# Clear all children except the close button row (first child)
+	# Удалить всё кроме строки с кнопкой закрытия (первый ребёнок)
 	var children := col.get_children()
 	for i in range(1, children.size()):
 		children[i].queue_free()
 
-	var pct: float   = float(m.get("progress_pct", 0.0))
-	var is_done: bool = bool(m.get("is_done", false))
+	var mod_status: String = str(m.get("status", "locked"))
+	var is_done:    bool   = (mod_status == "done")
+	var is_avail:   bool   = (mod_status == "available")
 
+	# ── Название ─────────────────────────────────────────────────────────────
 	var name_lbl := Label.new()
 	name_lbl.text = str(m.get("name", "Модуль"))
 	name_lbl.add_theme_font_size_override("font_size", 24)
 	name_lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
 	col.add_child(name_lbl)
 
+	# ── Описание ──────────────────────────────────────────────────────────────
 	var desc_lbl := Label.new()
 	desc_lbl.text = str(m.get("description", ""))
 	desc_lbl.add_theme_font_size_override("font_size", 17)
@@ -283,20 +290,123 @@ func _show_module_info(m: Dictionary) -> void:
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	col.add_child(desc_lbl)
 
+	# ── Статус ───────────────────────────────────────────────────────────────
 	var status_lbl := Label.new()
-	if is_done:
-		status_lbl.text = "✅ Готово"
-		status_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.8))
-	elif pct > 0:
-		status_lbl.text = "🔧 В работе — %.0f%%" % pct
-		status_lbl.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))
-	else:
-		status_lbl.text = "⏳ Не начат"
-		status_lbl.add_theme_color_override("font_color", Color(0.6, 0.65, 0.8))
-	status_lbl.add_theme_font_size_override("font_size", 20)
+	match mod_status:
+		"done":
+			status_lbl.text = "✅ Построен"
+			status_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.8))
+		"available":
+			status_lbl.text = "🔧 Доступен для постройки"
+			status_lbl.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
+		_:
+			status_lbl.text = "🔒 Недоступен — постройте зависимые модули"
+			status_lbl.add_theme_color_override("font_color", Color(0.6, 0.55, 0.65))
+	status_lbl.add_theme_font_size_override("font_size", 19)
 	col.add_child(status_lbl)
 
+	if is_done:
+		_module_info_panel.visible = true
+		return
+
+	# ── Список ресурсов для постройки ─────────────────────────────────────────
+	var costs: Array = m.get("costs", [])
+	if not costs.is_empty():
+		var sep := HSeparator.new()
+		col.add_child(sep)
+
+		var cost_hdr := Label.new()
+		cost_hdr.text = "Необходимые ресурсы:"
+		cost_hdr.add_theme_font_size_override("font_size", 17)
+		cost_hdr.add_theme_color_override("font_color", Color(0.75, 0.85, 1.0))
+		col.add_child(cost_hdr)
+
+		# Индексируем текущий склад
+		var storage_index: Dictionary = {}
+		for item in _storage:
+			storage_index[int(item.get("resource_id", 0))] = float(item.get("quantity", 0))
+
+		var can_build := true
+		for cost_item in costs:
+			var rid   := int(cost_item.get("resource_id", 0))
+			var need  := float(cost_item.get("quantity", 0))
+			var have  := float(storage_index.get(rid, 0.0))
+			var enough: bool = (have >= need - 0.001)
+			if not enough:
+				can_build = false
+
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation", 6)
+			col.add_child(row)
+
+			var r_lbl := Label.new()
+			var r_name := _resource_name_by_id(rid)
+			r_lbl.text = "%s × %s" % [r_name, _fmt_qty(need)]
+			r_lbl.add_theme_font_size_override("font_size", 16)
+			r_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(r_lbl)
+
+			var have_lbl := Label.new()
+			have_lbl.text = "есть: %s" % _fmt_qty(have)
+			have_lbl.add_theme_font_size_override("font_size", 16)
+			if enough:
+				have_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.6))
+			else:
+				have_lbl.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
+			row.add_child(have_lbl)
+
+		# ── Кнопка «Построить» ────────────────────────────────────────────────
+		if is_avail:
+			var build_btn := Button.new()
+			build_btn.text = "🔨 Построить"
+			build_btn.add_theme_font_size_override("font_size", 20)
+			build_btn.disabled = not can_build
+			build_btn.pressed.connect(
+				func(): _on_build_module(str(m.get("slug", "")))
+			)
+			col.add_child(build_btn)
+
 	_module_info_panel.visible = true
+
+
+# ── Постройка модуля ──────────────────────────────────────────────────────────
+
+func _on_build_module(slug: String) -> void:
+	if _busy or slug.is_empty() or _planet_id <= 0:
+		return
+	_module_info_panel.visible = false
+	_busy = true
+	var res := await _api.build_ship_module(_planet_id, slug)
+	_busy = false
+	if res.has("_error"):
+		_show_msg(_extract_err(res))
+		return
+	_show_msg("✅ Модуль построен!")
+	_ship_project = res
+	await _refresh_all()
+
+
+func _resource_name_by_id(rid: int) -> String:
+	# Поиск в загруженном складе
+	for item in _storage:
+		if int(item.get("resource_id", 0)) == rid:
+			return "%s %s" % [str(item.get("emoji", "📦")), str(item.get("name", ""))]
+	# Статичный справочник для ресурсов, которых нет на складе
+	const NAMES: Dictionary = {
+		1: "🪨 Железная руда", 2: "💎 Кристаллы", 3: "✨ Редкий металл",
+		4: "💨 Газ",           5: "🔧 Запчасти",   6: "⚡ Электроника",
+		7: "🔫 Оружие",        8: "⛽ Топливо",    9: "🌾 Зерно",
+		10: "🥩 Мясо",         11: "💧 Вода",      12: "🌶️ Экзоспеции",
+		13: "🤖 Нанодроны",    14: "💾 Чипы",      15: "☢️ Антивещество",
+		16: "🦾 Медимпланты",  17: "🎨 Предметы искусства", 18: "🏺 Артефакты",
+	}
+	return NAMES.get(rid, "Ресурс #%d" % rid)
+
+
+func _fmt_qty(q: float) -> String:
+	if q >= 1000.0:
+		return "%.0f" % q
+	return "%g" % q
 
 
 # ── Склад — вспомогательные функции ──────────────────────────────────────────

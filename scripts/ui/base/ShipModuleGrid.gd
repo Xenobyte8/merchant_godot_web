@@ -7,10 +7,10 @@ class_name ShipModuleGrid
 
 signal module_tapped(module: Dictionary)
 
-# ── Цвета ────────────────────────────────────────────────────────────────────
-const COLOR_NOT_STARTED := Color(0.15, 0.18, 0.32)
-const COLOR_IN_PROGRESS := Color(0.75, 0.55, 0.08)
-const COLOR_DONE        := Color(0.12, 0.62, 0.55)
+# ── Цвета статусов ────────────────────────────────────────────────────────────
+const COLOR_DONE      := Color(0.10, 0.55, 0.48)   # бирюзово-зелёный — готово
+const COLOR_AVAILABLE := Color(0.18, 0.38, 0.62)   # синий — можно строить
+const COLOR_LOCKED    := Color(0.10, 0.10, 0.16)   # почти чёрный — закрыто
 
 const TEXTURES: Dictionary = {
 	"bow":                 preload("res://assets/images/ship_modules/bow.png"),
@@ -57,7 +57,7 @@ func _setup_module_node(node: Control) -> void:
 		bg.name = "Bg"
 		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		bg.color = COLOR_NOT_STARTED
+		bg.color = COLOR_LOCKED
 		node.add_child(bg)
 
 	# Иконка — создаём только если нет в сцене
@@ -167,20 +167,21 @@ func _update_all() -> void:
 
 
 func _update_module_node(node: Control, m: Dictionary) -> void:
-	var pct: float    = float(m.get("progress_pct", 0.0))
-	var is_done: bool = bool(m.get("is_done", false))
+	var mod_status: String = str(m.get("status", "locked"))
+	var is_done:    bool   = (mod_status == "done")
 
-	var bg_color: Color
-	var icon_tint: Color
-	if is_done:
-		bg_color  = COLOR_DONE
-		icon_tint = Color(0.7, 1.0, 0.95)
-	elif pct > 0:
-		bg_color  = COLOR_IN_PROGRESS
-		icon_tint = Color(1.0, 0.85, 0.35)
-	else:
-		bg_color  = COLOR_NOT_STARTED
-		icon_tint = Color(0.35, 0.4, 0.6)
+	var bg_color:   Color
+	var icon_tint:  Color
+	match mod_status:
+		"done":
+			bg_color  = COLOR_DONE
+			icon_tint = Color(0.7, 1.0, 0.92)
+		"available":
+			bg_color  = COLOR_AVAILABLE
+			icon_tint = Color(0.65, 0.85, 1.0)
+		_:   # locked
+			bg_color  = COLOR_LOCKED
+			icon_tint = Color(0.25, 0.27, 0.35)
 
 	var bg: ColorRect = node.get_node_or_null("Bg")
 	if bg:
@@ -190,18 +191,37 @@ func _update_module_node(node: Control, m: Dictionary) -> void:
 	if icon:
 		icon.modulate = icon_tint
 
+	# Замок-оверлей для locked-модулей
+	var lock_lbl: Label = node.get_node_or_null("LockLabel")
+	if lock_lbl == null and mod_status == "locked":
+		lock_lbl = Label.new()
+		lock_lbl.name = "LockLabel"
+		lock_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		lock_lbl.text = "🔒"
+		lock_lbl.set_anchor(SIDE_LEFT,  0.0)
+		lock_lbl.set_anchor(SIDE_RIGHT, 1.0)
+		lock_lbl.set_anchor(SIDE_TOP,   0.0)
+		lock_lbl.set_anchor(SIDE_BOTTOM,0.0)
+		lock_lbl.offset_top    = 2.0
+		lock_lbl.offset_bottom = 28.0
+		lock_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		lock_lbl.add_theme_font_size_override("font_size", 16)
+		node.add_child(lock_lbl)
+	elif lock_lbl != null:
+		lock_lbl.visible = (mod_status == "locked")
+
 	var lbl: Label = node.get_node_or_null("NameLabel")
 	if lbl:
 		lbl.text = str(m.get("name", str(node.name)))
 
+	# Полоска прогресса и галочка больше не нужны — статус отражается цветом
 	var bar: ProgressBar = node.get_node_or_null("Bar")
 	if bar:
-		bar.value   = pct
-		bar.visible = pct > 0 and not is_done
+		bar.visible = false
 
-	var done_lbl: Label = node.get_node_or_null("DoneLabel")
-	if done_lbl:
-		done_lbl.visible = is_done
+	var check_lbl: Label = node.get_node_or_null("DoneLabel")
+	if check_lbl:
+		check_lbl.visible = is_done
 
 
 # ── Ввод ─────────────────────────────────────────────────────────────────────
