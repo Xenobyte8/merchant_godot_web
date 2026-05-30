@@ -17,6 +17,9 @@ var username: String = "test_user"
 var first_name: String = "Test"
 var last_name: String = "User"
 
+## Баланс игрока — обновляется из Main._refresh_balance()
+var balance: float = 0.0
+
 ## Кэш текстур планет: slug -> ImageTexture (null = в процессе загрузки)
 var texture_cache: Dictionary = {}
 

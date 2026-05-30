@@ -14,6 +14,7 @@ var _planet_id:   int        = 0
 var _ship:        Dictionary = {}   # default ship for buying
 var _all_ships:   Array      = []   # all user ships at this planet
 var _sell_ship_idx: int      = -1   # -1 = all ships, >=0 = index in _all_ships
+var _view_only:   bool       = false  # true = no ship on planet, prices only
 var _api:         ApiClient
 var _market_data: Dictionary = {}
 var _tab:         String     = "buy"   # "buy" | "sell"
@@ -36,14 +37,20 @@ func _ready() -> void:
 # ── Public API ────────────────────────────────────────────────────────────────
 
 func open(planet_id: int, ship: Dictionary, api: ApiClient, all_ships: Array = []) -> void:
-	_planet_id     = planet_id
-	_ship          = ship.duplicate(true)
-	_all_ships     = all_ships.duplicate(true) if not all_ships.is_empty() else [ship.duplicate(true)]
-	_sell_ship_idx = -1 if _all_ships.size() > 1 else 0
+	_planet_id  = planet_id
+	_view_only  = ship.is_empty()
+	_ship       = ship.duplicate(true)
+	if _view_only:
+		_all_ships     = []
+		_sell_ship_idx = 0
+	else:
+		_all_ships     = all_ships.duplicate(true) if not all_ships.is_empty() else [ship.duplicate(true)]
+		_sell_ship_idx = -1 if _all_ships.size() > 1 else 0
 	_api           = api
 	_tab           = "buy"
 	_market_data   = {}
 	visible        = true
+	_sell_tab_btn.disabled = _view_only
 	_update_cargo_label()
 	_set_tab_buttons("buy")
 	_load_market()
@@ -76,7 +83,7 @@ func _show_loading() -> void:
 	var lbl := Label.new()
 	lbl.text = "Загрузка..."
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 96)
+	lbl.add_theme_font_size_override("font_size", 24)
 	lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
 	_list_container.add_child(lbl)
 
@@ -86,7 +93,7 @@ func _show_error(msg: String) -> void:
 	var lbl := Label.new()
 	lbl.text = msg
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 88)
+	lbl.add_theme_font_size_override("font_size", 22)
 	lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
 	_list_container.add_child(lbl)
 
@@ -143,6 +150,9 @@ func _build_buy_list() -> void:
 
 
 func _build_sell_list() -> void:
+	if _view_only:
+		_add_placeholder("Нет корабля на планете — продажа недоступна")
+		return
 	# ── Селектор корабля (только если кораблей больше одного) ────────────────
 	if _all_ships.size() > 1:
 		var selector := HBoxContainer.new()
@@ -154,7 +164,7 @@ func _build_sell_list() -> void:
 			b.text = label
 			b.flat = (_sell_ship_idx != idx)
 			b.custom_minimum_size = Vector2(0, 44)
-			b.add_theme_font_size_override("font_size", 80)
+			b.add_theme_font_size_override("font_size", 20)
 			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			b.pressed.connect(func():
 				_sell_ship_idx = idx
@@ -198,7 +208,7 @@ func _build_sell_list() -> void:
 			var cap:  float = ship.get("cargo_capacity", ship.get("effective_cargo_capacity", 0.0))
 			var hdr := Label.new()
 			hdr.text = "🚀  %s   (%.0f / %.0f т)" % [ship.get("name", "?"), used, cap]
-			hdr.add_theme_font_size_override("font_size", 80)
+			hdr.add_theme_font_size_override("font_size", 20)
 			hdr.add_theme_color_override("font_color", Color(0.65, 0.80, 1.0))
 			hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			_list_container.add_child(hdr)
@@ -225,7 +235,7 @@ func _add_placeholder(text: String) -> void:
 	lbl.text                  = text
 	lbl.horizontal_alignment  = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	lbl.add_theme_font_size_override("font_size", 88)
+	lbl.add_theme_font_size_override("font_size", 22)
 	lbl.add_theme_color_override("font_color", Color(0.45, 0.45, 0.5))
 	_list_container.add_child(lbl)
 
@@ -245,12 +255,22 @@ func _make_buy_row(item: Dictionary) -> Control:
 	var info_box: VBoxContainer = row.get_child(1)
 
 	var total_lbl := Label.new()
-	total_lbl.add_theme_font_size_override("font_size", 72)
+	total_lbl.add_theme_font_size_override("font_size", 18)
 	total_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
 	total_lbl.text = "Итого: ≈ %.0f кр" % (price * factor)
 	info_box.add_child(total_lbl)
 
-	var qty_box := _make_qty_box(1, int(stock),
+	if _view_only:
+		return row
+
+	# MAX = min(запас, место в трюме, хватает денег)
+	var free_cargo := float(_ship.get("effective_cargo_capacity", _ship.get("cargo_capacity", 0.0))) \
+		- float(_ship.get("cargo_used", 0.0))
+	var cargo_max := int(free_cargo / weight) if weight > 0.0 else int(stock)
+	var balance_max := int(Session.balance / (price * factor)) if price * factor > 0.0 else int(stock)
+	var buy_max := maxi(0, mini(mini(int(stock), cargo_max), balance_max))
+
+	var qty_box := _make_qty_box(mini(1, maxi(buy_max, 1)), maxi(buy_max, 1),
 		func(v: int): total_lbl.text = "Итого: ≈ %.0f кр" % (v * price * factor)
 	)
 	var qty_lbl: Label = qty_box.get_node("QtyLabel")
@@ -259,7 +279,7 @@ func _make_buy_row(item: Dictionary) -> Control:
 	var btn := Button.new()
 	btn.text = "Купить"
 	btn.custom_minimum_size = Vector2(100, 0)
-	btn.add_theme_font_size_override("font_size", 88)
+	btn.add_theme_font_size_override("font_size", 22)
 	btn.pressed.connect(func(): _do_buy(resource_id, float(qty_lbl.text), weight))
 	row.add_child(btn)
 
@@ -279,7 +299,7 @@ func _make_sell_row(ship: Dictionary, cargo_item: Dictionary, market_item: Dicti
 	var info_box: VBoxContainer = row.get_child(1)
 
 	var total_lbl := Label.new()
-	total_lbl.add_theme_font_size_override("font_size", 72)
+	total_lbl.add_theme_font_size_override("font_size", 18)
 	total_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 0.55))
 	total_lbl.text = "Получите: ≈ %.0f кр" % (price * factor)
 	info_box.add_child(total_lbl)
@@ -293,7 +313,7 @@ func _make_sell_row(ship: Dictionary, cargo_item: Dictionary, market_item: Dicti
 	var btn := Button.new()
 	btn.text = "Продать"
 	btn.custom_minimum_size = Vector2(100, 0)
-	btn.add_theme_font_size_override("font_size", 88)
+	btn.add_theme_font_size_override("font_size", 22)
 	btn.pressed.connect(func(): _do_sell(ship, resource_id, float(qty_lbl.text), weight))
 	row.add_child(btn)
 
@@ -323,14 +343,14 @@ func _make_row_base(resource_id: int, name_text: String, price: float, detail: S
 
 	var name_lbl := Label.new()
 	name_lbl.text = name_text
-	name_lbl.add_theme_font_size_override("font_size", 96)
+	name_lbl.add_theme_font_size_override("font_size", 24)
 	name_lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
 	name_lbl.clip_text = true
 	info_box.add_child(name_lbl)
 
 	var detail_lbl := Label.new()
 	detail_lbl.text = "%.0f кр/т  •  %s" % [price, detail]
-	detail_lbl.add_theme_font_size_override("font_size", 72)
+	detail_lbl.add_theme_font_size_override("font_size", 18)
 	detail_lbl.add_theme_color_override("font_color", Color(0.5, 0.75, 0.5))
 	info_box.add_child(detail_lbl)
 
@@ -375,7 +395,7 @@ func _make_qty_box(min_val: int, max_val: int, on_change: Callable = Callable())
 	var minus := Button.new()
 	minus.text                  = "−"
 	minus.custom_minimum_size   = Vector2(44, 44)
-	minus.add_theme_font_size_override("font_size", 104)
+	minus.add_theme_font_size_override("font_size", 26)
 	box.add_child(minus)
 
 	var qty_lbl := Label.new()
@@ -384,14 +404,14 @@ func _make_qty_box(min_val: int, max_val: int, on_change: Callable = Callable())
 	qty_lbl.custom_minimum_size  = Vector2(52, 44)
 	qty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	qty_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
-	qty_lbl.add_theme_font_size_override("font_size", 88)
+	qty_lbl.add_theme_font_size_override("font_size", 22)
 	qty_lbl.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	box.add_child(qty_lbl)
 
 	var plus := Button.new()
 	plus.text                 = "+"
 	plus.custom_minimum_size  = Vector2(44, 44)
-	plus.add_theme_font_size_override("font_size", 104)
+	plus.add_theme_font_size_override("font_size", 26)
 	box.add_child(plus)
 
 	minus.pressed.connect(func():
@@ -407,6 +427,17 @@ func _make_qty_box(min_val: int, max_val: int, on_change: Callable = Callable())
 			qty_lbl.text = str(v + 1)
 			if on_change.is_valid():
 				on_change.call(v + 1)
+	)
+
+	var max_btn := Button.new()
+	max_btn.text                = "MAX"
+	max_btn.custom_minimum_size = Vector2(60, 44)
+	max_btn.add_theme_font_size_override("font_size", 18)
+	box.add_child(max_btn)
+	max_btn.pressed.connect(func():
+		qty_lbl.text = str(max_val)
+		if on_change.is_valid():
+			on_change.call(max_val)
 	)
 
 	return box
@@ -468,6 +499,9 @@ func _remove_from_ship_cargo(ship: Dictionary, resource_id: int, qty: float) -> 
 
 
 func _update_cargo_label() -> void:
+	if _view_only:
+		_cargo_label.text = "Нет корабля на планете — только цены"
+		return
 	if _tab == "sell" and _sell_ship_idx == -1 and _all_ships.size() > 1:
 		var total_used := 0.0
 		var total_cap  := 0.0
@@ -485,20 +519,31 @@ func _update_cargo_label() -> void:
 # ── Build UI ──────────────────────────────────────────────────────────────────
 
 func _build_ui() -> void:
-	var overlay := ColorRect.new()
-	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.color        = Color(0.02, 0.04, 0.14, 0.98)
-	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(overlay)
+	var panel := PanelContainer.new()
+	panel.anchor_left   = 1.0
+	panel.anchor_right  = 1.0
+	panel.anchor_top    = 0.0
+	panel.anchor_bottom = 1.0
+	panel.offset_left   = -650
+	panel.offset_right  = 0
+	panel.offset_top    = 52
+	panel.offset_bottom = -320
+	panel.mouse_filter  = Control.MOUSE_FILTER_STOP
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color              = Color(0.02, 0.05, 0.16, 0.97)
+	panel_style.border_width_left     = 2
+	panel_style.border_color          = Color(0.25, 0.45, 0.75, 0.6)
+	panel_style.content_margin_left   = 16
+	panel_style.content_margin_right  = 16
+	panel_style.content_margin_top    = 12
+	panel_style.content_margin_bottom = 12
+	panel.add_theme_stylebox_override("panel", panel_style)
+	add_child(panel)
 
 	var root := VBoxContainer.new()
-	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.offset_left   =  18
-	root.offset_right  = -18
-	root.offset_top    =  28
-	root.offset_bottom = -20
-	root.add_theme_constant_override("separation", 10)
-	overlay.add_child(root)
+	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_theme_constant_override("separation", 8)
+	panel.add_child(root)
 
 	# ── Шапка ─────────────────────────────────────────────────────────────────
 	var header := HBoxContainer.new()
@@ -506,7 +551,7 @@ func _build_ui() -> void:
 
 	_title_label = Label.new()
 	_title_label.text = "🏪 Рынок"
-	_title_label.add_theme_font_size_override("font_size", 136)
+	_title_label.add_theme_font_size_override("font_size", 34)
 	_title_label.add_theme_color_override("font_color", Color(0.95, 1.0, 0.85))
 	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(_title_label)
@@ -514,14 +559,14 @@ func _build_ui() -> void:
 	var close_btn := Button.new()
 	close_btn.text = "✕"
 	close_btn.flat = true
-	close_btn.add_theme_font_size_override("font_size", 112)
+	close_btn.add_theme_font_size_override("font_size", 28)
 	close_btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	close_btn.pressed.connect(close_screen)
 	header.add_child(close_btn)
 
 	# ── Инфо о трюме ──────────────────────────────────────────────────────────
 	_cargo_label = Label.new()
-	_cargo_label.add_theme_font_size_override("font_size", 80)
+	_cargo_label.add_theme_font_size_override("font_size", 20)
 	_cargo_label.add_theme_color_override("font_color", Color(0.55, 0.75, 0.55))
 	root.add_child(_cargo_label)
 
@@ -536,7 +581,7 @@ func _build_ui() -> void:
 	_buy_tab_btn.text                   = "  КУПИТЬ  "
 	_buy_tab_btn.flat                   = false
 	_buy_tab_btn.size_flags_horizontal  = Control.SIZE_EXPAND_FILL
-	_buy_tab_btn.add_theme_font_size_override("font_size", 96)
+	_buy_tab_btn.add_theme_font_size_override("font_size", 24)
 	_buy_tab_btn.pressed.connect(func(): _switch_tab("buy"))
 	tabs.add_child(_buy_tab_btn)
 
@@ -544,7 +589,7 @@ func _build_ui() -> void:
 	_sell_tab_btn.text                  = "  ПРОДАТЬ  "
 	_sell_tab_btn.flat                  = true
 	_sell_tab_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_sell_tab_btn.add_theme_font_size_override("font_size", 96)
+	_sell_tab_btn.add_theme_font_size_override("font_size", 24)
 	_sell_tab_btn.pressed.connect(func(): _switch_tab("sell"))
 	tabs.add_child(_sell_tab_btn)
 
@@ -566,7 +611,7 @@ func _build_ui() -> void:
 	toast_style.content_margin_bottom = 10
 	_error_toast.add_theme_stylebox_override("panel", toast_style)
 	var toast_lbl := Label.new()
-	toast_lbl.add_theme_font_size_override("font_size", 88)
+	toast_lbl.add_theme_font_size_override("font_size", 22)
 	toast_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.75))
 	toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

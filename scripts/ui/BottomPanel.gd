@@ -7,7 +7,7 @@ class_name BottomPanel
 
 signal ship_selected(ship: Dictionary)
 signal destination_selected(ship_id: int, planet_id: int)
-signal enter_city_requested(planet_id: int)
+signal market_requested(planet_id: int)
 
 const SHIP_ASSETS_URL_PATH := "/assets/images/"
 const RESOURCE_ICON_URL    := "/assets/images/resources/{id}/icon.png"
@@ -80,14 +80,14 @@ func show_planet(planet_name: String, planet_id: int, planet_slug: String, ships
 	planet_lbl.vertical_alignment    = VERTICAL_ALIGNMENT_CENTER
 	header.add_child(planet_lbl)
 
-	var city_btn := Button.new()
-	city_btn.text                = "🏙  Войти в город"
-	city_btn.flat                = false
-	city_btn.custom_minimum_size = Vector2(0, 64)
-	city_btn.add_theme_font_size_override("font_size", 24)
-	city_btn.add_theme_color_override("font_color", Color(0.9, 1.0, 0.8))
-	city_btn.pressed.connect(func() -> void: enter_city_requested.emit(planet_id))
-	header.add_child(city_btn)
+	var market_btn := Button.new()
+	market_btn.text                = "🏪  Рынок"
+	market_btn.flat                = false
+	market_btn.custom_minimum_size = Vector2(0, 64)
+	market_btn.add_theme_font_size_override("font_size", 24)
+	market_btn.add_theme_color_override("font_color", Color(0.9, 1.0, 0.8))
+	market_btn.pressed.connect(func() -> void: market_requested.emit(planet_id))
+	header.add_child(market_btn)
 
 	# ── Список кораблей в два столбца ───────────────────────────────────────
 	if ships.is_empty():

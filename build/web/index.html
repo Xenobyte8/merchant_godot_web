@@ -104,13 +104,18 @@
     <!-- Godot engine -->
     <script src="index.js"></script>
     <script>
-      var engine = new Engine({"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":95988,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4});
+      var engine = new Engine({"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":97028,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4});
       var loaderFill = document.getElementById('loader-bar-fill');
+      var loaderText = document.querySelector('#game-loader span');
       engine.startGame({
         canvas: document.getElementById('canvas'),
         onProgress: function (current, total) {
           if (total > 0 && loaderFill) {
-            loaderFill.style.width = Math.min(100, Math.round(current / total * 100)) + '%';
+            var pct = Math.min(90, Math.round(current / total * 100));
+            loaderFill.style.width = pct + '%';
+            if (pct >= 90 && loaderText) {
+              loaderText.textContent = 'Инициализация...';
+            }
           }
         }
       });
@@ -120,6 +125,27 @@
       canvas.addEventListener('pointerdown', function(e) {
         canvas.setPointerCapture(e.pointerId);
       });
+    </script>
+
+    <!-- Авто-обновление при деплое новой версии -->
+    <script>
+      (function() {
+        var _loadedVersion = null;
+        function checkVersion() {
+          fetch('/version.json?_=' + Date.now(), { cache: 'no-store' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              if (_loadedVersion === null) {
+                _loadedVersion = data.v;
+              } else if (data.v !== _loadedVersion) {
+                location.reload(true);
+              }
+            })
+            .catch(function() {});
+        }
+        checkVersion();
+        setInterval(checkVersion, 60000);
+      })();
     </script>
   </body>
 </html>

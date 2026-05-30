@@ -65,6 +65,8 @@ func _input(event: InputEvent) -> void:
 					_add_zoom_momentum(-log(WHEEL_STEP), mb.position)
 			MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE:
 				if mb.pressed:
+					if _mouse_over_ui():
+						return  # нажатие на UI — не начинаем пан/тап
 					_panning         = true
 					_dragging        = false
 					_pan_start_mouse = mb.position

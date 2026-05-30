@@ -27,11 +27,15 @@
           window.ysdk.features.LoadingAPI) {
         window.ysdk.features.LoadingAPI.ready();
       }
-      // Скрываем лоадер вне зависимости от наличия SDK
+      // Добиваем прогрессбар до 100% и скрываем лоадер
+      var fill = document.getElementById('loader-bar-fill');
+      if (fill) fill.style.width = '100%';
       var loader = document.getElementById('game-loader');
       if (loader) {
-        loader.classList.add('hidden');
-        setTimeout(function () { loader.remove(); }, 450);
+        setTimeout(function () {
+          loader.classList.add('hidden');
+          setTimeout(function () { loader.remove(); }, 450);
+        }, 350);
       }
     },
 

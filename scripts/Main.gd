@@ -28,10 +28,8 @@ func _ready() -> void:
 	galaxy.planet_tapped.connect(_on_planet_tapped)
 	bottom_panel.ship_selected.connect(_on_ship_selected)
 	bottom_panel.destination_selected.connect(_on_destination_selected)
-	bottom_panel.enter_city_requested.connect(_on_enter_city_requested)
-	city_view.market_requested.connect(_on_market_requested)
-	city_view.closed.connect(func(): bottom_panel.collapse())
-	market_screen.closed.connect(func(): city_view.visible = true)
+	bottom_panel.market_requested.connect(_on_market_requested)
+	market_screen.closed.connect(func(): pass)
 	market_screen.trade_completed.connect(_refresh_after_trade)
 	quests_inbox.closed.connect(_on_quests_inbox_closed)
 	camera.map_tapped.connect(_on_map_tapped)
@@ -83,7 +81,9 @@ func _refresh_after_trade() -> void:
 func _refresh_balance() -> void:
 	var profile := await api.get_profile()
 	if not profile.is_empty() and profile.has("balance"):
-		top_bar.set_balance(float(profile["balance"]))
+		var amount := float(profile["balance"])
+		Session.balance = amount
+		top_bar.set_balance(amount)
 
 
 func _start_polling() -> void:
@@ -101,6 +101,9 @@ func _on_planet_tapped(planet_id: int, planet_name: String, planet_slug: String,
 	_current_planet_slug  = planet_slug
 	_current_planet_ships = ships
 	bottom_panel.show_planet(planet_name, planet_id, planet_slug, ships)
+	# Если рынок был открыт — переоткрываем для новой планеты
+	if market_screen.visible:
+		_on_market_requested(planet_id)
 
 
 func _on_ship_selected(ship: Dictionary) -> void:
@@ -113,27 +116,20 @@ func _on_destination_selected(ship_id: int, planet_id: int) -> void:
 		await _refresh_map()
 
 
-func _on_enter_city_requested(planet_id: int) -> void:
-	city_view.show_city({"id": planet_id, "name": _current_planet_name})
-
-
 func _on_map_tapped() -> void:
 	# Игнорируем: этот сигнал — отпускание той же кнопки, что открыла планету
 	if _planet_just_tapped:
 		_planet_just_tapped = false
 		return
-	if not city_view.visible and not market_screen.visible:
-		bottom_panel.collapse()
+	market_screen.close_screen()
+	bottom_panel.collapse()
 
 
 func _on_market_requested(planet_id: int) -> void:
-	# Используем выбранный корабль, иначе — первый корабль на планете
 	var ship: Dictionary = bottom_panel.current_ship
 	if ship.is_empty() and not _current_planet_ships.is_empty():
 		ship = _current_planet_ships[0]
-	if ship.is_empty():
-		return
-	city_view.visible = false
+	# ship может быть пустым — открывается в режиме просмотра цен
 	market_screen.open(planet_id, ship, api, _current_planet_ships)
 
 

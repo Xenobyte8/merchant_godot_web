@@ -21,6 +21,10 @@ bash "$SCRIPT_DIR/build_web.sh"
 
 log "Деплой на $SERVER:$REMOTE_DIR..."
 ssh "${SSH_OPTS[@]}" "$SERVER" "mkdir -p $REMOTE_DIR"
+
+# Генерируем version.json с unix-timestamp деплоя
+echo "{\"v\":\"$(date +%s)\"}" > "$BUILD_DIR/version.json"
+
 rsync -az --delete \
   -e "ssh ${SSH_OPTS[*]}" \
   "$BUILD_DIR/" \
